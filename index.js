@@ -58,7 +58,7 @@ app.use("/real-estate", authenticateJWT, realEstateRouter);
 app.use("/auth", authenticateJWT, googleRouter);
 app.use("/member", authenticateJWT, memberRouter);
 app.use("/auction", authenticateJWT, auctionRouter);
-app.use("/join-list-member", authenticateJWT, joinListMemberRouter);
+app.use("/join-list-member", joinListMemberRouter);
 app.use("/accountToken", accountTokenRouter);
 app.use("/", accountRouter);
 

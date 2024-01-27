@@ -140,6 +140,49 @@ const createAuction = async (req, res) => {
   }
 };
 
+const updateAuction = async (req, res) => {
+  try {
+    const {
+      _id,
+      name,
+      startPrice,
+      priceStep,
+      description,
+      status,
+      buyNowPrice,
+      realEstateID,
+    } = req.body;
+
+    const checkUpdate = await auctionModel.updateOne(
+      { _id },
+      {
+        name,
+        startPrice,
+        priceStep,
+        description,
+        status,
+        buyNowPrice,
+        realEstateID,
+      }
+    );
+
+    if (!checkUpdate.modifiedCount > 0) {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
+      });
+    } else {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: checkUpdate,
+        message: "Auction is updated",
+      });
+    }
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
 const removeAuction = async (req, res) => {
   try {
     const _id = req.params.id;
@@ -155,6 +198,7 @@ const removeAuction = async (req, res) => {
         res.status(HTTP.OK).json({
           success: true,
           response: checkRemoveAuction,
+          message: "Remove Auction Succesfully!!",
         });
       }
     } else {
@@ -174,5 +218,6 @@ module.exports = {
   getAuctionByStatus,
   getAuctionByName,
   createAuction,
+  updateAuction,
   removeAuction,
 };

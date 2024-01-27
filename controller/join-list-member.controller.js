@@ -74,12 +74,50 @@ const addMemberToList = async (req, res) => {
         res.status(HTTP.OK).json({
           success: true,
           response: checkUpdate,
+          message: "Join List is updated",
         });
       }
     } else {
       res.status(HTTP.NOT_FOUND).json({
         success: false,
-        error: EXCEPTIONS.FAIL_TO_GET_ITEM,
+        error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
+      });
+    }
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
+const removeMemberFromList = async (req, res) => {
+  try {
+    const { auctionID, memberID } = req.body;
+
+    const joinList = await joinListMemberModel.findOne({
+      auctionID: auctionID,
+    });
+
+    if (joinList.memberID.length > 0) {
+      const checkUpdate = await joinListMemberModel.updateOne(
+        { auctionID },
+        { $pull: { memberID: memberID } }
+      );
+
+      if (!checkUpdate.modifiedCount > 0) {
+        res.status(HTTP.BAD_REQUEST).json({
+          success: false,
+          error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
+        });
+      } else {
+        res.status(HTTP.OK).json({
+          success: true,
+          response: checkUpdate,
+          message: "Join List is updated",
+        });
+      }
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        error: "Join List is empty! Nothing to update!!",
       });
     }
   } catch (error) {
@@ -91,4 +129,5 @@ module.exports = {
   getJoinListMemberByAuctionID,
   addMemberToList,
   checkIsMemberInList,
+  removeMemberFromList,
 };

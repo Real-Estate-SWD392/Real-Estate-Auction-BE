@@ -9,30 +9,6 @@ const { sendVerifyEmail } = require("../services/email");
 const path = require("path");
 const { memberModel } = require("../models/member.model");
 const generateTokens = require("../utils/generateAccountToken");
-const accountTokenModel = require("../models/accountToken.model");
-
-// CREATE NEW TOKEN FOR USER
-// const generateAccessToken = (user) => {
-//   const payload = {
-//     id: user._id,
-//     email: user.email,
-//   };
-
-//   const jwtSecretKey = process.env.JWT_SECRET_KEY;
-
-//   return jwt.sign(payload, jwtSecretKey, { expiresIn: "30m" });
-// };
-
-// const generateRefreshToken = (user) => {
-//   const payload = {
-//     id: user._id,
-//     email: user.email,
-//   };
-
-//   const jwtSecretKey = process.env.JWT_SECRET_KEY;
-
-//   return jwt.sign(payload, jwtSecretKey, { expiresIn: "1d" });
-// };
 
 // REGISTER
 const registerAccount = async (req, res) => {
@@ -135,22 +111,20 @@ const loginAccount = async (req, res) => {
 
 const logoutAccount = async (req, res) => {
   try {
-    const token = req.body.token;
+    const refreshToken = req.cookies.refreshToken;
 
-    const accountToken = await accountTokenModel.findOne({ token });
-    if (!accountToken)
+    const accessToken = req.headers["authorization"];
+
+    if (!refreshToken && !accessToken) {
       return res
         .status(HTTP.OK)
-        .json({ error: false, message: "Logged Out Sucessfully ( No token )" });
-
-    const checkDelete = await accountTokenModel.deleteOne({
-      token,
-    });
-
-    res.status(HTTP.OK).json({
-      error: false,
-      message: "Logged Out Sucessfully ( Remove token )",
-    });
+        .json({ success: true, message: "Logged Out Sucessfully" });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        message: "Logged Out Failed",
+      });
+    }
   } catch (err) {
     res
       .status(HTTP.INTERNAL_SERVER_ERROR)

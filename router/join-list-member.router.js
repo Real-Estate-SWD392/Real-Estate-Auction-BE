@@ -3,12 +3,14 @@ const {
   getJoinListMemberByAuctionID,
   addMemberToList,
   checkIsMemberInList,
+  removeMemberFromList,
 } = require("../controller/join-list-member.controller");
 
 const router = express.Router();
 
 router.get("/", checkIsMemberInList);
 router.get("/:auctionID", getJoinListMemberByAuctionID);
-router.put("/", addMemberToList);
+router.put("/add", addMemberToList);
+router.put("/remove", removeMemberFromList);
 
 module.exports = router;

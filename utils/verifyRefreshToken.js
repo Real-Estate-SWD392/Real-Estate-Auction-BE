@@ -1,15 +1,10 @@
 const jwt = require("jsonwebtoken");
-const accountTokenModel = require("../models/accountToken.model");
 
 const verifyRefreshToken = (refreshToken) => {
   const privateKey = process.env.JWT_SECRET_KEY;
 
   return new Promise(async (resolve, reject) => {
-    const accountToken = await accountTokenModel.findOne({
-      token: refreshToken,
-    });
-
-    if (!accountToken)
+    if (!refreshToken)
       return reject({ error: true, message: "Invalid refresh token" });
 
     jwt.verify(refreshToken, privateKey, (err, decoded) => {
