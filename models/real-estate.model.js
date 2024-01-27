@@ -24,6 +24,11 @@ const realEstateSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const realEstateEnums = {
+  type: realEstateSchema.path("type").enumValues,
+  status: realEstateSchema.path("status").enumValues,
+};
+
 const realEstateModel = mongoose.model("Real-Estate", realEstateSchema);
 
-module.exports = realEstateModel;
+module.exports = { realEstateModel, realEstateEnums };

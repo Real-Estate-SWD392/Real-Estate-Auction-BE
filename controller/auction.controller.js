@@ -3,6 +3,26 @@ const EXCEPTIONS = require("../exceptions/Exceptions");
 const auctionModel = require("../models/auction.model");
 const joinListMemberModel = require("../models/join-list-member.model");
 
+const getAllAuction = async (req, res) => {
+  try {
+    const auctions = await auctionModel.find({});
+
+    if (auctions.length > 0) {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: auctions,
+      });
+    } else {
+      res.status(HTTP.NOT_FOUND).json({
+        success: false,
+        error: EXCEPTIONS.FAIL_TO_GET_ITEM,
+      });
+    }
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
 const getAuctionByID = async (req, res) => {
   try {
     const _id = req.params.id;
@@ -27,7 +47,7 @@ const getAuctionByID = async (req, res) => {
 
 const getAuctionByStatus = async (req, res) => {
   try {
-    const status = req.query.status;
+    const status = req.params.status;
 
     const auction = await auctionModel.find({ status: status });
 
@@ -49,7 +69,7 @@ const getAuctionByStatus = async (req, res) => {
 
 const getAuctionByName = async (req, res) => {
   try {
-    const name = req.query.name;
+    const name = req.params.name;
 
     const regex = new RegExp(name, "i"); // 'i' flag for case-insensitive matching
 
@@ -149,6 +169,7 @@ const removeAuction = async (req, res) => {
 };
 
 module.exports = {
+  getAllAuction,
   getAuctionByID,
   getAuctionByStatus,
   getAuctionByName,

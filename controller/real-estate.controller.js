@@ -1,9 +1,11 @@
 const { json } = require("express");
 const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTIONS = require("../exceptions/Exceptions");
-const realEstateModel = require("../models/real-estate.model");
+const {
+  realEstateModel,
+  realEstateEnums,
+} = require("../models/real-estate.model");
 const multer = require("multer");
-const { deepEqual } = require("../utils/compare2Objects");
 const { default: mongoose } = require("mongoose");
 const _ = require("lodash");
 
@@ -149,6 +151,12 @@ const updateRealEstate = async (req, res) => {
     const { _id, bedRoom, bathRoom, size, status, pdf, image, ownerID, type } =
       req.body;
 
+    const isStatusValid = realEstateEnums.status.find(
+      (check) => check === status
+    );
+
+    const isTypeValid = realEstateEnums.type.find((check) => check === type);
+
     const newValues = {
       bedRoom,
       bathRoom,
@@ -174,7 +182,7 @@ const updateRealEstate = async (req, res) => {
       return oldValueJSON !== newValueJSON;
     });
 
-    if (valuesChanged) {
+    if (valuesChanged && isTypeValid && isStatusValid) {
       const checkUpdate = await realEstateModel.updateOne({ _id }, newValues);
 
       if (checkUpdate.modifiedCount > 0) {

@@ -28,6 +28,9 @@ const Exceptions = {
   EMAIL_IS_REQUIRED: "Email must be provided!!",
   PASSWORD_IS_REQUIRED: "Password must be provided!!",
   PHONE_NUMBER_IS_REQUIRED: "Phone number must be provided!!",
+
+  // AUTHENTICATION
+  ACCESS_DENIED: "Access Denied. No token provided.",
 };
 
 module.exports = Exceptions;

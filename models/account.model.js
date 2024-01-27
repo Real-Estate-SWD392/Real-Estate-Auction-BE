@@ -9,7 +9,7 @@ const accountSchema = new mongoose.Schema(
     role: {
       type: String,
       default: "member",
-      enum: { values: ["admin", "staf", "member"] },
+      enum: { values: ["admin", "staff", "member"] },
     },
   },
   { timestamps: true }
