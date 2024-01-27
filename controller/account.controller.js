@@ -41,7 +41,7 @@ const registerAccount = async (req, res) => {
 
     const checkAccount = await account.save();
 
-    const checkVerify = await sendVerifyEmail(account);
+    await sendVerifyEmail(account);
 
     if (checkAccount) {
       let member = new memberModel({
@@ -67,9 +67,17 @@ const registerAccount = async (req, res) => {
 
 // LOGIN
 const loginAccount = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty())
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+
+    const { email, password } = req.body;
+
     const user = await accountModel.findOne({ email });
 
     if (!user)

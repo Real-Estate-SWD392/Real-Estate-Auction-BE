@@ -56,4 +56,27 @@ const registerValidator = [
     .withMessage(EXCEPTIONS.PASSWORD_NOT_VALID),
 ];
 
-module.exports = { registerValidator };
+const loginValidator = [
+  body("email")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage(EXCEPTIONS.EMAIL_IS_REQUIRED)
+    .bail()
+    .isEmail()
+    .withMessage(EXCEPTIONS.EMAIL_NOT_VALID)
+    .bail(),
+  body("password")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage(EXCEPTIONS.PASSWORD_IS_REQUIRED)
+    .bail()
+    .isLength({ min: 5 })
+    .withMessage("Password should be at least 5 characters")
+    .bail()
+    .isStrongPassword()
+    .withMessage(EXCEPTIONS.PASSWORD_NOT_VALID),
+];
+
+module.exports = { registerValidator, loginValidator };

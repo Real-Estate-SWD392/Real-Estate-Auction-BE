@@ -11,7 +11,6 @@ const db = require("./config/database");
 // DEFINE ROUTER
 const realEstateRouter = require("./router/real-estate.router");
 const accountRouter = require("./router/account.router");
-const accountTokenRouter = require("./router/accountToken.router");
 const memberRouter = require("./router/member.router");
 const auctionRouter = require("./router/auction.router");
 const googleRouter = require("./router/google.router");
@@ -58,8 +57,7 @@ app.use("/real-estate", authenticateJWT, realEstateRouter);
 app.use("/auth", authenticateJWT, googleRouter);
 app.use("/member", authenticateJWT, memberRouter);
 app.use("/auction", authenticateJWT, auctionRouter);
-app.use("/join-list-member", joinListMemberRouter);
-app.use("/accountToken", accountTokenRouter);
+app.use("/join-list-member", authenticateJWT, joinListMemberRouter);
 app.use("/", accountRouter);
 
 // CONNECT TO PORT
