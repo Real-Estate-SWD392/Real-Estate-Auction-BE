@@ -5,12 +5,18 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const { validationResult } = require("express-validator");
-const { sendVerifyEmail } = require("../services/email");
+const {
+  sendVerifyEmail,
+  sendForgotPasswordMail,
+} = require("../services/email");
 const path = require("path");
 const { memberModel } = require("../models/member.model");
-const generateTokens = require("../utils/generateAccountToken");
+const {
+  generateTokens,
+  generateResetToken,
+} = require("../utils/generateAccountToken");
+const accountTokenModel = require("../models/accountToken.model");
 
-// REGISTER
 const registerAccount = async (req, res) => {
   try {
     const { firstName, lastName, email, phoneNumber, password } = req.body;
@@ -30,18 +36,23 @@ const registerAccount = async (req, res) => {
         errors: errors.array(),
       });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     let account = new accountModel({
       email,
-      password: hashedPassword,
-      emailToken: crypto.randomBytes(64).toString("hex"),
+      password,
     });
 
     const checkAccount = await account.save();
 
-    await sendVerifyEmail(account);
+    // CREATE VERIFY TOKEN
+    let verifyToken = new accountTokenModel({
+      accountID: checkAccount._id,
+      verifyToken: crypto.randomBytes(64).toString("hex"),
+      verifyTokenExpires: Date.now() + 1800000,
+    });
+
+    await verifyToken.save();
+
+    await sendVerifyEmail(account, verifyToken);
 
     if (checkAccount) {
       let member = new memberModel({
@@ -61,11 +72,12 @@ const registerAccount = async (req, res) => {
       res.status(HTTP.INTERNAL_SERVER_ERROR).json("Cannot create account");
     }
   } catch (error) {
-    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
   }
 };
 
-// LOGIN
 const loginAccount = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -81,7 +93,7 @@ const loginAccount = async (req, res) => {
     const user = await accountModel.findOne({ email });
 
     if (!user)
-      return res.status(HTTP.BAD_REQUEST).json({
+      return res.status(HTTP.UNAUTHORIZED).json({
         success: false,
         error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
       });
@@ -89,6 +101,12 @@ const loginAccount = async (req, res) => {
     const checkValidPassword = await bcrypt.compare(password, user.password);
 
     if (!checkValidPassword)
+      return res.status(HTTP.UNAUTHORIZED).json({
+        success: false,
+        error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
+      });
+
+    if (!user.isVerified)
       return res.status(HTTP.UNAUTHORIZED).json({
         success: false,
         error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
@@ -113,7 +131,9 @@ const loginAccount = async (req, res) => {
         message: "Logged in sucessfully",
       });
   } catch (error) {
-    res.status(HTTP.INTERNAL_SERVER_ERROR).json("INTERNAL_SERVER_ERROR");
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -136,23 +156,95 @@ const logoutAccount = async (req, res) => {
   } catch (err) {
     res
       .status(HTTP.INTERNAL_SERVER_ERROR)
-      .json({ error: true, message: "Internal Server Error" });
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const email = req.body.email;
+    const account = await accountModel.findOne({ email });
+    if (!account)
+      return res.status(HTTP.NOT_FOUND).json({ message: "User not found!!" });
+
+    const resetToken = await generateResetToken(account);
+
+    const accountToken = await new accountTokenModel({
+      accountID: account._id,
+      resetToken,
+      resetTokenExpires: Date.now() + 1800000,
+    }).save();
+
+    await sendForgotPasswordMail(account, accountToken);
+    res.status(HTTP.OK).json({
+      message: "Send Reset Password Mail Complete!!",
+    });
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const token = req.query.token;
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+  const resetToken = await accountTokenModel.findOne({
+    accountID: decoded._id,
+    resetToken: token,
+    resetTokenExpires: { $gt: Date.now() },
+  });
+
+  if (!resetToken)
+    return res.status(HTTP.BAD_REQUEST).json({
+      message: "Invalid or expired password reset token",
+    });
+
+  const newPassword = req.body.password;
+
+  const checkUpdate = await accountModel.findOneAndUpdate(
+    { _id: decoded._id },
+    { password: newPassword }
+  );
+
+  console.log(checkUpdate);
+
+  const expiresToken = await accountTokenModel.updateOne(
+    { accountID: decoded._id },
+    { resetToken: undefined, resetTokenExpires: undefined }
+  );
+
+  if (checkUpdate && expiresToken.modifiedCount > 0) {
+    res.status(HTTP.OK).json({
+      message: "Reset Password Successfully!!",
+    });
+  } else {
+    res.status(HTTP.BAD_REQUEST).json({
+      message: "Reset Password Fail!!",
+    });
   }
 };
 
 const verifyEmail = async (req, res) => {
   try {
-    const emailToken = req.query.emailToken;
+    const _id = req.query.userID;
+    const verifyToken = req.query.verifyToken;
 
-    if (!emailToken)
+    if (!verifyToken)
       return res.status(HTTP.NOT_FOUND).json("Email Token not found!!");
 
-    const user = await accountModel.findOne({ emailToken });
+    const user = await accountModel.findOne({ _id });
 
-    if (user) {
-      user.emailToken = null;
+    const checkTokenValid = await accountTokenModel.findOne({
+      accountID: user._id,
+      verifyToken,
+      verifyTokenExpires: { $gt: Date.now() },
+    });
+
+    if (user && checkTokenValid) {
       user.isVerified = true;
-
       await user.save();
 
       res.sendFile(path.join(__dirname, "./../views/verified.html"));
@@ -164,4 +256,113 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-module.exports = { registerAccount, loginAccount, logoutAccount, verifyEmail };
+const getAllAccounts = async (req, res) => {
+  try {
+    const accounts = await accountModel.find({});
+
+    if (accounts.length > 0) {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: accounts,
+      });
+    } else {
+      res.status(HTTP.NOT_FOUND).json({
+        success: false,
+        error: EXCEPTIONS.FAIL_TO_GET_ITEM,
+      });
+    }
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const changeAccountPassword = async (req, res) => {
+  try {
+    const { _id, oldPassword, newPassword } = req.body;
+
+    if (newPassword === oldPassword)
+      return res.status(HTTP.BAD_REQUEST).json({
+        succes: false,
+        error: "New Password should be different from Old Password",
+      });
+
+    const account = await accountModel.findOne({ _id });
+
+    const checkValidPassword = await bcrypt.compare(
+      oldPassword,
+      account.password
+    );
+
+    if (checkValidPassword) {
+      account.password = newPassword;
+      await account.save();
+
+      return res.status(HTTP.OK).json({
+        succes: true,
+        response: account,
+        message: "Update Password Successfully",
+      });
+    } else {
+      return res.status(HTTP.BAD_REQUEST).json({
+        succes: false,
+        error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
+        message: "Old Password not correct!",
+      });
+    }
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const deleteAccount = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    console.log(_id);
+
+    const checkDeleteAccount = await accountModel.deleteOne({ _id });
+    const checkDeleteMember = await memberModel.deleteOne({
+      accountID: _id,
+    });
+    const checkDeleteToken = await accountTokenModel.deleteOne({
+      accountID: _id,
+    });
+
+    if (
+      checkDeleteAccount.deletedCount > 0 &&
+      checkDeleteMember.deletedCount > 0 &&
+      checkDeleteToken.deletedCount > 0
+    ) {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: checkDeleteAccount,
+        message: "Remove Account Succesfully!!",
+      });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        error: EXCEPTIONS.FAIL_TO_DELETE_ITEM,
+      });
+    }
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+module.exports = {
+  registerAccount,
+  loginAccount,
+  logoutAccount,
+  verifyEmail,
+  getAllAccounts,
+  changeAccountPassword,
+  deleteAccount,
+  forgotPassword,
+  resetPassword,
+};

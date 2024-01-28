@@ -12,7 +12,7 @@ const authenticateJWT = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET_KEY);
-    req.user = decoded.user;
+    req.user = decoded;
     next();
   } catch (error) {
     if (!refreshToken) {
@@ -21,7 +21,6 @@ const authenticateJWT = (req, res, next) => {
 
     try {
       const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET_KEY);
-      console.log(decoded);
       const payload = { _id: decoded._id, email: decoded.email };
 
       const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
@@ -34,7 +33,10 @@ const authenticateJWT = (req, res, next) => {
           sameSite: "strict",
         })
         .header("Authorization", accessToken)
-        .send(decoded.user);
+        .json({
+          message: "Create New Access Token Complete!!",
+          decoded,
+        });
     } catch (error) {
       return res.status(HTTP.BAD_REQUEST).json({
         message: "Invalid Token",

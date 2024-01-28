@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const cookie = require("cookie-session");
 const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 // DEFINE DATABASE

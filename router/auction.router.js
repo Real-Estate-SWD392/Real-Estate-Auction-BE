@@ -6,6 +6,7 @@ const {
   getAuctionByName,
   removeAuction,
   getAllAuction,
+  updateAuction,
 } = require("../controller/auction.controller");
 
 const router = express.Router();
@@ -16,6 +17,8 @@ router.get("/ID/:id", getAuctionByID);
 router.get("/status/:status", getAuctionByStatus);
 
 router.post("/", createAuction);
+
+router.put("/", updateAuction);
 
 router.delete("/:id", removeAuction);
 

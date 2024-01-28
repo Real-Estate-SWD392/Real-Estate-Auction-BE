@@ -31,6 +31,8 @@ const Exceptions = {
 
   // AUTHENTICATION
   ACCESS_DENIED: "Access Denied. No token provided.",
+
+  INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
 };
 
 module.exports = Exceptions;

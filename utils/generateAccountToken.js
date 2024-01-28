@@ -18,4 +18,18 @@ const generateTokens = async (account) => {
   }
 };
 
-module.exports = generateTokens;
+const generateResetToken = async (account) => {
+  try {
+    const payload = { _id: account._id, email: account.email };
+
+    const resetToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
+    return Promise.resolve(resetToken);
+  } catch (err) {
+    return Promise.reject(err);
+  }
+};
+
+module.exports = { generateTokens, generateResetToken };

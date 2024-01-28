@@ -31,8 +31,6 @@ const getRealEstateByOwner = async (req, res) => {
   try {
     const ownerID = req.params.ownerID;
 
-    console.log("ownerID", ownerID);
-
     const result = await realEstateModel.find({ ownerID });
 
     if (result.length > 0) {
@@ -225,7 +223,6 @@ const uploadPDF = async (req, res) => {
     }
 
     const files = req.files;
-    console.log(files);
     res.status(200).json(files);
   });
 };
