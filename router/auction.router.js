@@ -10,6 +10,8 @@ const {
   addMemberToList,
   removeMemberFromList,
   getJoinListMemberByAuctionID,
+  sortAuctionByTime,
+  filterAuction,
 } = require("../controller/auction.controller");
 
 const router = express.Router();
@@ -19,6 +21,8 @@ router.get("/name/:name", getAuctionByName);
 router.get("/ID/:id", getAuctionByID);
 router.get("/status/:status", getAuctionByStatus);
 router.get("/joinList/:auctionID", getJoinListMemberByAuctionID);
+router.get("/sort/time", sortAuctionByTime);
+router.get("/filter", filterAuction);
 
 router.post("/", createAuction);
 

@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const { auctionModel, auctionEnums } = require("../models/auction.model");
+const addressModel = require("../models/address.model");
 
 const getAllAuction = async (req, res) => {
   try {
@@ -93,6 +94,47 @@ const getAuctionByName = async (req, res) => {
   }
 };
 
+const sortAuctionByTime = async (req, res) => {
+  try {
+    const sortedAuctions = await auctionModel.find({}).sort({ createdAt: 1 });
+    return res.status(HTTP.OK).json({
+      success: true,
+      response: sortedAuctions,
+    });
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      message: "Sort failed",
+      error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
+const filterAuction = async (req, res) => {
+  try {
+    const validField = {};
+
+    const values = req.query;
+
+    Object.keys(values).map((key) => {
+      if (values[key] !== "") {
+        validField[key] = values[key];
+      }
+    });
+
+    const filteredAuction = await auctionModel.find({ validField });
+
+    res.status(HTTP.OK).json({
+      success: true,
+      response: filteredAuction,
+    });
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
+      message: "Filter Auction Fail!",
+    });
+  }
+};
+
 const createAuction = async (req, res) => {
   try {
     const {
@@ -108,6 +150,14 @@ const createAuction = async (req, res) => {
       buyNowPrice,
       realEstateID,
     } = req.body;
+
+    const checkValidRealEstateID = await auctionModel.findOne({ realEstateID });
+
+    if (checkValidRealEstateID)
+      return res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        message: "This real estate is already in use",
+      });
 
     const newAuction = new auctionModel({
       name,
@@ -128,7 +178,7 @@ const createAuction = async (req, res) => {
     if (checkAuction) {
       res.status(HTTP.INSERT_OK).json({
         success: true,
-        result: newAuction,
+        result: checkAuction,
       });
     } else {
       res.status(HTTP.BAD_REQUEST).json({
@@ -345,4 +395,6 @@ module.exports = {
   addMemberToList,
   removeMemberFromList,
   getJoinListMemberByAuctionID,
+  sortAuctionByTime,
+  filterAuction,
 };
