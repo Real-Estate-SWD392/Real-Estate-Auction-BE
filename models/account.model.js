@@ -3,8 +3,8 @@ const bcrypt = require("bcrypt");
 
 const accountSchema = new mongoose.Schema(
   {
-    email: { type: String, minLength: 5, require: true, unique: true },
-    password: { type: String, minLength: 5, require: true },
+    email: { type: String, minLength: 5, required: true, unique: true },
+    password: { type: String, minLength: 5, required: true },
     isVerified: { type: Boolean, default: false },
     role: {
       type: String,

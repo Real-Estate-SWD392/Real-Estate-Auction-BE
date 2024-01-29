@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const auctionSchema = mongoose.Schema(
   {
-    name: { type: String, require: true },
-    startPrice: { type: Number, require: true },
-    priceStep: { type: Number, min: 0, require: true },
+    name: { type: String, required: true },
+    startPrice: { type: Number, required: true },
+    priceStep: { type: Number, min: 0, required: true },
     day: { type: Number, min: 0 },
     hour: { type: Number, min: 0, max: 24 },
     minute: { type: Number, min: 0, max: 60 },

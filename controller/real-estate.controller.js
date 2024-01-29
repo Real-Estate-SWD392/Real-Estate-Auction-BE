@@ -8,6 +8,7 @@ const {
 const multer = require("multer");
 const { default: mongoose } = require("mongoose");
 const _ = require("lodash");
+const addressModel = require("../models/address.model");
 
 const getAllRealEstate = async (req, res) => {
   try {
@@ -113,7 +114,20 @@ const getRealEstateByType = async (req, res) => {
 
 const createNewRealEstate = async (req, res) => {
   try {
-    const { bedRoom, bathRoom, size, status, pdf, image, ownerID } = req.body;
+    const {
+      bedRoom,
+      bathRoom,
+      size,
+      status,
+      pdf,
+      image,
+      ownerID,
+      street,
+      district,
+      city,
+    } = req.body;
+
+    console.log(city);
 
     const newRealEstate = await realEstateModel({
       bedRoom,
@@ -127,7 +141,16 @@ const createNewRealEstate = async (req, res) => {
 
     const checkRealEstate = await newRealEstate.save();
 
-    if (checkRealEstate) {
+    const auctionAddress = new addressModel({
+      realEstateID: checkRealEstate._id,
+      street,
+      district,
+      city: undefined,
+    });
+
+    const checkAdress = await auctionAddress.save();
+
+    if (checkRealEstate && checkAdress) {
       res.status(HTTP.INSERT_OK).json({
         success: true,
         response: newRealEstate,
