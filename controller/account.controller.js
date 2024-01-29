@@ -169,16 +169,32 @@ const forgotPassword = async (req, res) => {
 
     const resetToken = await generateResetToken(account);
 
-    const accountToken = await new accountTokenModel({
+    const checkTokenExist = await accountTokenModel.findOne({
       accountID: account._id,
-      resetToken,
-      resetTokenExpires: Date.now() + 1800000,
-    }).save();
-
-    await sendForgotPasswordMail(account, accountToken);
-    res.status(HTTP.OK).json({
-      message: "Send Reset Password Mail Complete!!",
     });
+
+    if (checkTokenExist) {
+      const check = await accountTokenModel.findOneAndUpdate(
+        { _id: checkTokenExist._id },
+        { resetToken: resetToken, resetTokenExpires: Date.now() + 1800000 }
+      );
+
+      await sendForgotPasswordMail(account, accountToken);
+      res.status(HTTP.OK).json({
+        message: "Send Reset Password Mail Complete!!",
+      });
+    } else {
+      const accountToken = await new accountTokenModel({
+        accountID: account._id,
+        resetToken,
+        resetTokenExpires: Date.now() + 1800000,
+      }).save();
+
+      await sendForgotPasswordMail(account, accountToken);
+      res.status(HTTP.OK).json({
+        message: "Send Reset Password Mail Complete!!",
+      });
+    }
   } catch (error) {
     res
       .status(HTTP.INTERNAL_SERVER_ERROR)
@@ -187,42 +203,49 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  const token = req.query.token;
+  try {
+    const token = req.query.token;
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-  const resetToken = await accountTokenModel.findOne({
-    accountID: decoded._id,
-    resetToken: token,
-    resetTokenExpires: { $gt: Date.now() },
-  });
-
-  if (!resetToken)
-    return res.status(HTTP.BAD_REQUEST).json({
-      message: "Invalid or expired password reset token",
+    const resetToken = await accountTokenModel.findOne({
+      accountID: decoded._id,
+      resetToken: token,
+      resetTokenExpires: { $gt: Date.now() },
     });
 
-  const newPassword = req.body.password;
+    if (!resetToken)
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Invalid or expired password reset token",
+      });
 
-  const checkUpdate = await accountModel.findOneAndUpdate(
-    { _id: decoded._id },
-    { password: newPassword }
-  );
+    const newPassword = req.body.password;
 
-  console.log(checkUpdate);
+    const account = await accountModel.findOne({ _id: decoded._id });
 
-  const expiresToken = await accountTokenModel.updateOne(
-    { accountID: decoded._id },
-    { resetToken: undefined, resetTokenExpires: undefined }
-  );
+    account.password = newPassword;
 
-  if (checkUpdate && expiresToken.modifiedCount > 0) {
-    res.status(HTTP.OK).json({
-      message: "Reset Password Successfully!!",
-    });
-  } else {
-    res.status(HTTP.BAD_REQUEST).json({
-      message: "Reset Password Fail!!",
+    await account.save();
+
+    const expiresToken = await accountTokenModel.findOneAndUpdate(
+      { accountID: decoded._id },
+      { $unset: { resetToken: 1, resetTokenExpires: 1 } },
+      { new: true }
+    );
+
+    if (!expiresToken.resetToken && !expiresToken.resetTokenExpires) {
+      res.status(HTTP.OK).json({
+        message: "Reset Password Successfully!!",
+      });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        message: "Reset Password Fail!!",
+      });
+    }
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      succes: false,
+      message: "Reset Password Fail",
     });
   }
 };
