@@ -169,20 +169,35 @@ const forgotPassword = async (req, res) => {
 
     const resetToken = await generateResetToken(account);
 
-    const accountToken = await new accountTokenModel({
+    const checkTokenExist = await accountTokenModel.findOne({
       accountID: account._id,
-      resetToken,
-      resetTokenExpires: Date.now() + 1800000,
-    }).save();
-
-    await sendForgotPasswordMail(account, accountToken);
-    res.status(HTTP.OK).json({
-      message: "Send Reset Password Mail Complete!!",
     });
+
+    if (checkTokenExist) {
+      checkTokenExist.resetToken = resetToken;
+      checkTokenExist.resetTokenExpires = Date.now() + 1800000; // 30 mins
+      checkTokenExist.save();
+
+      await sendForgotPasswordMail(account, checkTokenExist);
+      return res.status(HTTP.OK).json({
+        message: "Send Reset Password Mail Complete!!",
+      });
+    } else {
+      const accountToken = await new accountTokenModel({
+        accountID: account._id,
+        resetToken,
+        resetTokenExpires: Date.now() + 1800000,
+      }).save();
+
+      await sendForgotPasswordMail(account, accountToken);
+      return res.status(HTTP.OK).json({
+        message: "Send Reset Password Mail Complete!!",
+      });
+    }
   } catch (error) {
-    res
+    return res
       .status(HTTP.INTERNAL_SERVER_ERROR)
-      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+      .json({ error: EXCEPTIONS.INTERNAL_SERVER_ERROR });
   }
 };
 
@@ -204,24 +219,23 @@ const resetPassword = async (req, res) => {
 
   const newPassword = req.body.password;
 
-  const checkUpdate = await accountModel.findOneAndUpdate(
-    { _id: decoded._id },
-    { password: newPassword }
-  );
+  const account = await accountModel.findOne({ _id: decoded._id });
 
-  console.log(checkUpdate);
+  account.password = newPassword;
+  await account.save();
 
-  const expiresToken = await accountTokenModel.updateOne(
+  const expiresToken = await accountTokenModel.findOneAndUpdate(
     { accountID: decoded._id },
-    { resetToken: undefined, resetTokenExpires: undefined }
+    { $unset: { resetToken: 1, resetTokenExpires: 1 } },
+    { new: true }
   );
 
-  if (checkUpdate && expiresToken.modifiedCount > 0) {
-    res.status(HTTP.OK).json({
+  if (!expiresToken.resetToken && !expiresToken.resetTokenExpires) {
+    return res.status(HTTP.OK).json({
       message: "Reset Password Successfully!!",
     });
   } else {
-    res.status(HTTP.BAD_REQUEST).json({
+    return res.status(HTTP.BAD_REQUEST).json({
       message: "Reset Password Fail!!",
     });
   }
