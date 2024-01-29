@@ -15,7 +15,6 @@ const accountRouter = require("./router/account.router");
 const memberRouter = require("./router/member.router");
 const auctionRouter = require("./router/auction.router");
 const googleRouter = require("./router/google.router");
-const joinListMemberRouter = require("./router/join-list-member.router");
 const passport = require("passport");
 const authenticateJWT = require("./utils/authenticateJWT");
 
@@ -57,8 +56,7 @@ const port = parseInt(process.env.PORT) || 5000;
 app.use("/real-estate", authenticateJWT, realEstateRouter);
 app.use("/auth", authenticateJWT, googleRouter);
 app.use("/member", authenticateJWT, memberRouter);
-app.use("/auction", authenticateJWT, auctionRouter);
-app.use("/join-list-member", authenticateJWT, joinListMemberRouter);
+app.use("/auction", auctionRouter);
 app.use("/", accountRouter);
 
 // CONNECT TO PORT
