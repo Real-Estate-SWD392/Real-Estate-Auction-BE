@@ -330,12 +330,14 @@ const removeRealEstate = async (req, res) => {
 
     const checkRealEstateRemove = await realEstateModel.findOneAndUpdate(
       { _id },
-      { isActive: false }
+      { isActive: false },
+      { new: true }
     );
 
     const checkAddressRemove = await addressModel.findOneAndUpdate(
       { realEstateID: _id },
-      { isActive: false }
+      { isActive: false },
+      { new: true }
     );
 
     if (!checkAddressRemove && !checkRealEstateRemove)
