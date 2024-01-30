@@ -267,8 +267,6 @@ const updateRealEstate = async (req, res) => {
       ...oldAddress.toObject(),
     };
 
-    // const valuesChanged = _.isEqual(oldValues, newValues);
-
     const valuesChanged = Object.keys(newValues).some((key) => {
       console.log(key + ": " + oldValues[key]);
       console.log(key + ": " + newValues[key]);
@@ -326,6 +324,36 @@ const updateRealEstate = async (req, res) => {
   }
 };
 
+const removeRealEstate = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    const checkRealEstateRemove = await realEstateModel.deleteOne({ _id });
+
+    const checkAddressRemove = await addressModel.deleteOne({
+      realEstateID: _id,
+    });
+
+    if (
+      checkAddressRemove.deletedCount > 0 &&
+      checkRealEstateRemove.deletedCount > 0
+    ) {
+      res
+        .status(HTTP.OK)
+        .json({ success: true, message: "Remove Real Estate Complete!" });
+    } else {
+      res
+        .status(HTTP.BAD_REQUEST)
+        .json({ success: false, message: "Remove  Real Estate Fail" });
+    }
+  } catch (error) {
+    console.log(error);
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json({ message: "Remove Real Estate Fail" }, error);
+  }
+};
+
 const uploadPDF = async (req, res) => {
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -378,6 +406,7 @@ module.exports = {
   getRealEstateByType,
   createNewRealEstate,
   updateRealEstate,
+  removeRealEstate,
   uploadPDF,
   uploadImages,
 };

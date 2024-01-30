@@ -9,6 +9,7 @@ const {
   createNewRealEstate,
   getRealEstateByOwner,
   updateRealEstate,
+  removeRealEstate,
 } = require("../controller/real-estate.controller");
 
 const router = express.Router();
@@ -22,6 +23,8 @@ router.get("/type/:type", getRealEstateByType);
 router.post("/", createNewRealEstate);
 
 router.put("/", updateRealEstate);
+
+router.delete("/:id", removeRealEstate);
 
 // UPLOAD PDF AND IMAGE
 router.post("/uploadPDF", uploadPDF);
