@@ -118,42 +118,40 @@ const createNewRealEstate = async (req, res) => {
       bedRoom,
       bathRoom,
       size,
-      status,
       pdf,
       image,
       ownerID,
+      type,
       street,
       district,
       city,
     } = req.body;
 
-    console.log(city);
-
     const newRealEstate = await realEstateModel({
       bedRoom,
       bathRoom,
       size,
-      status,
       pdf,
       image,
       ownerID,
+      type,
     });
 
     const checkRealEstate = await newRealEstate.save();
 
-    const auctionAddress = new addressModel({
+    const realEstateAddress = new addressModel({
       realEstateID: checkRealEstate._id,
       street,
       district,
-      city: undefined,
+      city,
     });
 
-    const checkAdress = await auctionAddress.save();
+    const checkAdress = await realEstateAddress.save();
 
     if (checkRealEstate && checkAdress) {
       res.status(HTTP.INSERT_OK).json({
         success: true,
-        response: newRealEstate,
+        response: [newRealEstate, realEstateAddress],
       });
     } else {
       res.status(HTTP.BAD_REQUEST),
@@ -169,8 +167,20 @@ const createNewRealEstate = async (req, res) => {
 
 const updateRealEstate = async (req, res) => {
   try {
-    const { _id, bedRoom, bathRoom, size, status, pdf, image, ownerID, type } =
-      req.body;
+    const {
+      _id,
+      bedRoom,
+      bathRoom,
+      size,
+      status,
+      pdf,
+      image,
+      ownerID,
+      type,
+      street,
+      district,
+      city,
+    } = req.body;
 
     const isStatusValid = realEstateEnums.status.find(
       (check) => check === status
@@ -178,7 +188,7 @@ const updateRealEstate = async (req, res) => {
 
     const isTypeValid = realEstateEnums.type.find((check) => check === type);
 
-    const newValues = {
+    const newRealEstate = {
       bedRoom,
       bathRoom,
       size,
@@ -189,32 +199,75 @@ const updateRealEstate = async (req, res) => {
       type,
     };
 
-    const oldValues = await realEstateModel.findOne(
+    const newAddress = {
+      street,
+      district,
+      city,
+    };
+
+    const newValues = { ...newRealEstate, ...newAddress };
+
+    const oldRealEstateValues = await realEstateModel.findOne(
       { _id },
       { _id: 0, createdAt: 0, updatedAt: 0, __v: 0 }
     );
 
+    const oldAddress = await addressModel.findOne(
+      { realEstateID: _id },
+      { __v: 0, realEstateID: 0, _id: 0 }
+    );
+
+    const oldValues = {
+      ...oldRealEstateValues.toObject(),
+      ...oldAddress.toObject(),
+    };
+
     // const valuesChanged = _.isEqual(oldValues, newValues);
 
     const valuesChanged = Object.keys(newValues).some((key) => {
+      console.log(key + ": " + oldValues[key]);
+      console.log(key + ": " + newValues[key]);
       const oldValueJSON = JSON.stringify(oldValues[key]);
       const newValueJSON = JSON.stringify(newValues[key]);
 
       return oldValueJSON !== newValueJSON;
     });
 
-    if (valuesChanged && isTypeValid && isStatusValid) {
-      const checkUpdate = await realEstateModel.updateOne({ _id }, newValues);
+    if (!isStatusValid) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Status not valid",
+      });
+    }
 
-      if (checkUpdate.modifiedCount > 0) {
+    if (!isTypeValid) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        message: "Type not valid",
+      });
+    }
+
+    if (valuesChanged) {
+      const checkRealEstateUpdate = await realEstateModel.updateOne(
+        { _id },
+        newRealEstate
+      );
+      const checkAddressUpdate = await addressModel.updateOne(
+        { realEstateID: _id },
+        newAddress
+      );
+
+      if (
+        checkRealEstateUpdate.modifiedCount > 0 &&
+        checkAddressUpdate.modifiedCount > 0
+      ) {
         res.status(HTTP.OK).json({
           success: true,
-          response: checkUpdate,
+          message: "Update Real Estate Complete",
         });
       } else {
         res.status(HTTP.BAD_REQUEST).json({
           success: false,
           response: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
+          message: "Update Real Estate Fail",
         });
       }
     } else {
