@@ -106,11 +106,11 @@ const loginAccount = async (req, res) => {
         error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
       });
 
-    if (!user.isVerified)
-      return res.status(HTTP.UNAUTHORIZED).json({
-        success: false,
-        error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
-      });
+    // if (!user.isVerified)
+    //   return res.status(HTTP.UNAUTHORIZED).json({
+    //     success: false,
+    //     error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
+    //   });
 
     const member = await memberModel.findOne({ email });
 

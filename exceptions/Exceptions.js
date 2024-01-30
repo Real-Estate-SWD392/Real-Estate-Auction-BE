@@ -9,6 +9,7 @@ const Exceptions = {
   FAIL_TO_CREATE_ITEM: "Fail to create data!!",
   FAIL_TO_UPDATE_ITEM: "Fail to update data!!",
   FAIL_TO_DELETE_ITEM: "Fail to delete data!!",
+  FAIL_TO_ADD_FAVORITE: "Add auction to favorite list fail!!",
 
   // VALIDATE EXCEPTIONS
   USER_HAS_EXIST: "This user already has an account!!",
