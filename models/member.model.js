@@ -8,6 +8,7 @@ const memberSchema = mongoose.Schema(
     lastName: { type: String, minLength: 2, require: true },
     phoneNumber: { type: String, minLength: 10, require: true },
     idCard: [{ type: String }],
+    favoriteList:[{type: Object}]
   },
   { timestamps: true }
 );
