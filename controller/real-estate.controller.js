@@ -12,11 +12,21 @@ const addressModel = require("../models/address.model");
 
 const getAllRealEstate = async (req, res) => {
   try {
-    const result = await realEstateModel.find({});
-    if (result.length > 0) {
+    const realEstate = await realEstateModel.find({});
+
+    const realEstateID = realEstate.map((n) => n._id);
+
+    const address = await addressModel.find({
+      realEstateID: { $in: realEstateID },
+    });
+
+    if (realEstate.length > 0 && address.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: result,
+        response: {
+          realEstate,
+          address,
+        },
       });
     } else {
       res
@@ -32,12 +42,21 @@ const getRealEstateByOwner = async (req, res) => {
   try {
     const ownerID = req.params.ownerID;
 
-    const result = await realEstateModel.find({ ownerID });
+    const realEstate = await realEstateModel.find({ ownerID });
 
-    if (result.length > 0) {
+    const realEstateID = realEstate.map((n) => n._id);
+
+    const address = await addressModel.find({
+      realEstateID: { $in: realEstateID },
+    });
+
+    if (realEstate.length > 0 && address.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: result,
+        response: {
+          realEstate,
+          address,
+        },
       });
     } else {
       res
@@ -54,11 +73,21 @@ const getRealEstateByID = async (req, res) => {
   try {
     const _id = req.params.id;
 
-    const result = await realEstateModel.findOne({ _id });
-    if (result) {
+    const realEstate = await realEstateModel.findOne({ _id });
+
+    const realEstateID = realEstate.map((n) => n._id);
+
+    const address = await addressModel.find({
+      realEstateID: { $in: realEstateID },
+    });
+
+    if (realEstate.length > 0 && address.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: result,
+        response: {
+          realEstate,
+          address,
+        },
       });
     } else {
       res
@@ -74,12 +103,21 @@ const getRealEstateByStatus = async (req, res) => {
   try {
     const status = req.params.status;
 
-    const result = await realEstateModel.find({ status: status });
+    const realEstate = await realEstateModel.find({ status: status });
 
-    if (result.length > 0) {
+    const realEstateID = realEstate.map((n) => n._id);
+
+    const address = await addressModel.find({
+      realEstateID: { $in: realEstateID },
+    });
+
+    if (realEstate.length > 0 && address.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: result,
+        response: {
+          realEstate,
+          address,
+        },
       });
     } else {
       res
@@ -93,14 +131,21 @@ const getRealEstateByStatus = async (req, res) => {
 
 const getRealEstateByType = async (req, res) => {
   try {
-    const type = req.params.type;
+    const realEstate = req.params.type;
 
-    const result = await realEstateModel.find({ type });
+    const realEstateID = realEstate.map((n) => n._id);
 
-    if (result.length > 0) {
+    const address = await addressModel.find({
+      realEstateID: { $in: realEstateID },
+    });
+
+    if (realEstate.length > 0 && address.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: result,
+        response: {
+          realEstate,
+          address,
+        },
       });
     } else {
       res
@@ -151,7 +196,7 @@ const createNewRealEstate = async (req, res) => {
     if (checkRealEstate && checkAdress) {
       res.status(HTTP.INSERT_OK).json({
         success: true,
-        response: [newRealEstate, realEstateAddress],
+        response: { newRealEstate, realEstateAddress },
       });
     } else {
       res.status(HTTP.BAD_REQUEST),
