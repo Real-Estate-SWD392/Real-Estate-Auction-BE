@@ -6,6 +6,7 @@ const addressSchema = mongoose.Schema({
   street: { type: String, required: true },
   district: { type: String, required: true },
   city: { type: String, required: true },
+  isActive: { type: Boolean, default: true },
 });
 
 const addressModel = mongoose.model("Address", addressSchema);

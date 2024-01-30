@@ -328,15 +328,24 @@ const removeRealEstate = async (req, res) => {
   try {
     const _id = req.params.id;
 
-    const checkRealEstateRemove = await realEstateModel.deleteOne({ _id });
+    const checkRealEstateRemove = await realEstateModel.findOneAndUpdate(
+      { _id },
+      { isActive: false }
+    );
 
-    const checkAddressRemove = await addressModel.deleteOne({
-      realEstateID: _id,
-    });
+    const checkAddressRemove = await addressModel.findOneAndUpdate(
+      { realEstateID: _id },
+      { isActive: false }
+    );
+
+    if (!checkAddressRemove && !checkRealEstateRemove)
+      return res.status(HTTP.NOT_FOUND).json({
+        message: "This real estate not exist!",
+      });
 
     if (
-      checkAddressRemove.deletedCount > 0 &&
-      checkRealEstateRemove.deletedCount > 0
+      checkAddressRemove.isActive === false &&
+      checkRealEstateRemove.isActive === false
     ) {
       res
         .status(HTTP.OK)

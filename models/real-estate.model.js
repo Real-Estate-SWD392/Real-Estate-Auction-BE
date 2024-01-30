@@ -21,6 +21,7 @@ const realEstateSchema = new mongoose.Schema(
     pdf: [{ type: String }],
     image: [{ type: String }],
     ownerID: { type: mongoose.Types.ObjectId, required: true },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
