@@ -10,10 +10,19 @@ const auctionSchema = mongoose.Schema(
     minute: { type: Number, min: 0, max: 60 },
     second: { type: Number, min: 0, max: 60 },
     numberOfBidder: { type: Number, min: 0, default: 0 },
-    description: { type: String },
+    description: { type: String, required: true },
     status: {
       type: String,
-      enum: { values: ["Wait For Approval", "Not Start", "In Auction", "End"] },
+      default: "Wait For Approval",
+      enum: {
+        values: [
+          "Wait For Approval",
+          "Not Start",
+          "In Auction",
+          "End",
+          "Cancel",
+        ],
+      },
     },
     buyNowPrice: { type: Number },
     realEstateID: { type: mongoose.Types.ObjectId },
@@ -21,6 +30,15 @@ const auctionSchema = mongoose.Schema(
       type: [{ type: mongoose.Types.ObjectId, ref: "Member" }],
       default: [],
     },
+    checkedStatus: {
+      type: String,
+      default: "Wait For Approval",
+      enum: {
+        values: ["Wait For Approval", "Accepted", "Denied"],
+      },
+    },
+
+    isActive: {},
   },
   { timestamps: true }
 );

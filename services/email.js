@@ -10,14 +10,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendVerifyEmail = async (user, token) => {
+const sendVerifyEmail = async (user) => {
   try {
     const mailOption = {
       from: `Email from <${process.env.USER}>`,
       to: user.email,
       subject: "Test Send Mail",
       html: `<p>Please verify your account by clicking this link:</p> 
-      <a href="${process.env.BASE_URL}/verify-email?verifyToken=${token.verifyToken}&userID=${user._id}">VERIFY YOUR ACCOUNT</a>`,
+      <a href="${process.env.BASE_URL}/auth/verify-email?verifyToken=${user.verifyToken}&userID=${user._id}">VERIFY YOUR ACCOUNT</a>`,
     };
 
     // CREATE EMAIL TRANSPORTER
@@ -34,9 +34,9 @@ const sendVerifyEmail = async (user, token) => {
   }
 };
 
-const sendForgotPasswordMail = async (user, token) => {
+const sendForgotPasswordMail = async (user) => {
   try {
-    const resetURL = `${process.env.BASE_URL}/resetPassword?token=${token.resetToken}`;
+    const resetURL = `${process.env.BASE_URL}/auth/resetPassword?token=${user.resetToken}`;
 
     const mailOption = {
       from: `Email from <${process.env.USER}>`,

@@ -10,13 +10,13 @@ require("dotenv").config();
 const db = require("./config/database");
 
 // DEFINE ROUTER
+const authRouter = require("./router/auth.router");
 const realEstateRouter = require("./router/real-estate.router");
 const accountRouter = require("./router/account.router");
 const memberRouter = require("./router/member.router");
 const auctionRouter = require("./router/auction.router");
 const provinceRouter = require("./router/province.router");
 const addressRouter = require("./router/address.router");
-const googleRouter = require("./router/google.router");
 const passport = require("passport");
 const authenticateJWT = require("./utils/authenticateJWT");
 
@@ -55,13 +55,13 @@ app.use(passport.session());
 const port = parseInt(process.env.PORT) || 5000;
 
 // DEFINE ROUTER LINK
+app.use("/auth", authRouter);
 app.use("/real-estate", authenticateJWT, realEstateRouter);
-app.use("/auth", authenticateJWT, googleRouter);
 app.use("/member", authenticateJWT, memberRouter);
 app.use("/auction", authenticateJWT, auctionRouter);
 app.use("/province", authenticateJWT, provinceRouter);
 app.use("/address", addressRouter);
-app.use("/", accountRouter);
+app.use("/account", accountRouter);
 
 // CONNECT TO PORT
 app.listen(port, (req, res) => {
