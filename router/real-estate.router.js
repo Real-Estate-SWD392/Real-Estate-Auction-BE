@@ -22,9 +22,9 @@ router.get("/type/:type", getRealEstateByType);
 
 router.post("/", createNewRealEstate);
 
-router.put("/", updateRealEstate);
+router.put("/:id", updateRealEstate);
 
-router.delete("/:id", removeRealEstate);
+router.put("/remove/:id", removeRealEstate);
 
 // UPLOAD PDF AND IMAGE
 router.post("/uploadPDF", uploadPDF);

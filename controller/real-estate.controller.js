@@ -8,19 +8,12 @@ const {
 const multer = require("multer");
 const { default: mongoose } = require("mongoose");
 const _ = require("lodash");
-const addressModel = require("../models/address.model");
 
 const getAllRealEstate = async (req, res) => {
   try {
     const realEstate = await realEstateModel.find({});
 
-    const realEstateID = realEstate.map((n) => n._id);
-
-    const address = await addressModel.find({
-      realEstateID: { $in: realEstateID },
-    });
-
-    if (realEstate.length > 0 && address.length > 0) {
+    if (realEstate.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
         response: {
@@ -44,19 +37,10 @@ const getRealEstateByOwner = async (req, res) => {
 
     const realEstate = await realEstateModel.find({ ownerID });
 
-    const realEstateID = realEstate.map((n) => n._id);
-
-    const address = await addressModel.find({
-      realEstateID: { $in: realEstateID },
-    });
-
-    if (realEstate.length > 0 && address.length > 0) {
+    if (realEstate.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: {
-          realEstate,
-          address,
-        },
+        response: realEstate,
       });
     } else {
       res
@@ -64,7 +48,6 @@ const getRealEstateByOwner = async (req, res) => {
         .json({ success: false, error: EXCEPTIONS.FAIL_TO_GET_ITEM });
     }
   } catch (error) {
-    console.log("error");
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -75,23 +58,14 @@ const getRealEstateByID = async (req, res) => {
 
     const realEstate = await realEstateModel.findOne({ _id });
 
-    const realEstateID = realEstate.map((n) => n._id);
-
-    const address = await addressModel.find({
-      realEstateID: { $in: realEstateID },
-    });
-
-    if (realEstate.length > 0 && address.length > 0) {
+    if (realEstate) {
       res.status(HTTP.OK).json({
         success: true,
-        response: {
-          realEstate,
-          address,
-        },
+        response: realEstate,
       });
     } else {
       res
-        .status(HTTP.BAD_REQUEST)
+        .status(HTTP.NOT_FOUND)
         .json({ success: false, error: EXCEPTIONS.FAIL_TO_GET_ITEM });
     }
   } catch (error) {
@@ -103,21 +77,12 @@ const getRealEstateByStatus = async (req, res) => {
   try {
     const status = req.params.status;
 
-    const realEstate = await realEstateModel.find({ status: status });
+    const realEstate = await realEstateModel.find({ status });
 
-    const realEstateID = realEstate.map((n) => n._id);
-
-    const address = await addressModel.find({
-      realEstateID: { $in: realEstateID },
-    });
-
-    if (realEstate.length > 0 && address.length > 0) {
+    if (realEstate.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: {
-          realEstate,
-          address,
-        },
+        response: realEstate,
       });
     } else {
       res
@@ -131,21 +96,14 @@ const getRealEstateByStatus = async (req, res) => {
 
 const getRealEstateByType = async (req, res) => {
   try {
-    const realEstate = req.params.type;
+    const type = req.params.type;
 
-    const realEstateID = realEstate.map((n) => n._id);
+    const realEstate = await realEstateModel.find({ type });
 
-    const address = await addressModel.find({
-      realEstateID: { $in: realEstateID },
-    });
-
-    if (realEstate.length > 0 && address.length > 0) {
+    if (realEstate.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
-        response: {
-          realEstate,
-          address,
-        },
+        response: realEstate,
       });
     } else {
       res
@@ -180,23 +138,17 @@ const createNewRealEstate = async (req, res) => {
       image,
       ownerID,
       type,
-    });
-
-    const checkRealEstate = await newRealEstate.save();
-
-    const realEstateAddress = new addressModel({
-      realEstateID: checkRealEstate._id,
       street,
       district,
       city,
     });
 
-    const checkAdress = await realEstateAddress.save();
+    const checkRealEstate = await newRealEstate.save();
 
-    if (checkRealEstate && checkAdress) {
+    if (checkRealEstate) {
       res.status(HTTP.INSERT_OK).json({
         success: true,
-        response: { newRealEstate, realEstateAddress },
+        response: newRealEstate,
       });
     } else {
       res.status(HTTP.BAD_REQUEST),
@@ -212,8 +164,8 @@ const createNewRealEstate = async (req, res) => {
 
 const updateRealEstate = async (req, res) => {
   try {
+    const _id = req.params.id;
     const {
-      _id,
       bedRoom,
       bathRoom,
       size,
@@ -233,7 +185,7 @@ const updateRealEstate = async (req, res) => {
 
     const isTypeValid = realEstateEnums.type.find((check) => check === type);
 
-    const newRealEstate = {
+    const newValues = {
       bedRoom,
       bathRoom,
       size,
@@ -242,30 +194,20 @@ const updateRealEstate = async (req, res) => {
       image,
       ownerID: mongoose.Types.ObjectId.createFromHexString(ownerID),
       type,
-    };
-
-    const newAddress = {
       street,
       district,
       city,
     };
 
-    const newValues = { ...newRealEstate, ...newAddress };
-
-    const oldRealEstateValues = await realEstateModel.findOne(
+    const oldValues = await realEstateModel.findOne(
       { _id },
       { _id: 0, createdAt: 0, updatedAt: 0, __v: 0 }
     );
 
-    const oldAddress = await addressModel.findOne(
-      { realEstateID: _id },
-      { __v: 0, realEstateID: 0, _id: 0 }
-    );
-
-    const oldValues = {
-      ...oldRealEstateValues.toObject(),
-      ...oldAddress.toObject(),
-    };
+    if (!oldValues)
+      return res
+        .status(HTTP.NOT_FOUND)
+        .json({ message: "Can not find real estate" });
 
     const valuesChanged = Object.keys(newValues).some((key) => {
       console.log(key + ": " + oldValues[key]);
@@ -291,17 +233,10 @@ const updateRealEstate = async (req, res) => {
     if (valuesChanged) {
       const checkRealEstateUpdate = await realEstateModel.updateOne(
         { _id },
-        newRealEstate
-      );
-      const checkAddressUpdate = await addressModel.updateOne(
-        { realEstateID: _id },
-        newAddress
+        newValues
       );
 
-      if (
-        checkRealEstateUpdate.modifiedCount > 0 &&
-        checkAddressUpdate.modifiedCount > 0
-      ) {
+      if (checkRealEstateUpdate.modifiedCount > 0) {
         res.status(HTTP.OK).json({
           success: true,
           message: "Update Real Estate Complete",
@@ -320,6 +255,7 @@ const updateRealEstate = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -334,24 +270,19 @@ const removeRealEstate = async (req, res) => {
       { new: true }
     );
 
-    const checkAddressRemove = await addressModel.findOneAndUpdate(
-      { realEstateID: _id },
-      { isActive: false },
-      { new: true }
-    );
-
-    if (!checkAddressRemove && !checkRealEstateRemove)
+    if (!checkRealEstateRemove)
       return res.status(HTTP.NOT_FOUND).json({
         message: "This real estate not exist!",
       });
 
-    if (
-      checkAddressRemove.isActive === false &&
-      checkRealEstateRemove.isActive === false
-    ) {
+    if (checkRealEstateRemove.isActive === false) {
       res
         .status(HTTP.OK)
-        .json({ success: true, message: "Remove Real Estate Complete!" });
+        .json({
+          success: true,
+          response: checkRealEstateRemove,
+          message: "Remove Real Estate Complete!",
+        });
     } else {
       res
         .status(HTTP.BAD_REQUEST)

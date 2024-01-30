@@ -3,14 +3,18 @@ const mongoose = require("mongoose");
 const realEstateSchema = new mongoose.Schema(
   {
     bedRoom: { type: Number, min: 0 },
+
     bathRoom: { type: Number, min: 0 },
+
     size: { type: Number, min: 10 },
+
     type: {
       type: String,
       enum: {
         values: ["Condominium", "Ground", "Penthouse", "Villa", "House"],
       },
     },
+
     status: {
       type: String,
       default: "Available",
@@ -18,10 +22,20 @@ const realEstateSchema = new mongoose.Schema(
         values: ["Sold", "Available", "In Auction", "Pending", "Rejected"],
       },
     },
+
     pdf: [{ type: String }],
+
     image: [{ type: String }],
+
     ownerID: { type: mongoose.Types.ObjectId, required: true },
+
     isActive: { type: Boolean, default: true },
+
+    street: { type: String, minLength: 2 },
+
+    district: { type: String, minLength: 2 },
+
+    city: { type: String, minLength: 2 },
   },
   { timestamps: true }
 );
