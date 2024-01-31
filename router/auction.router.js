@@ -26,10 +26,10 @@ router.get("/filter", filterAuction);
 
 router.post("/", createAuction);
 
-router.put("/", updateAuction);
-router.put("/addMember", addMemberToList);
-router.put("/removeMember", removeMemberFromList);
+router.put("/:id", updateAuction);
+router.put("/addMember/:auctionID/:accountID", addMemberToList);
+router.put("/removeMember/:auctionID/:accountID", removeMemberFromList);
 
-router.delete("/:id", removeAuction);
+router.put("/remove/:id", removeAuction);
 
 module.exports = router;

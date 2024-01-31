@@ -195,9 +195,11 @@ const getJoinListMemberByAuctionID = async (req, res) => {
   try {
     const auctionID = req.params.auctionID;
 
-    const auction = await auctionModel.findOne({
-      _id: auctionID,
-    });
+    const auction = await auctionModel
+      .findOne({
+        _id: auctionID,
+      })
+      .populate("joinList");
 
     if (auction.joinList.length > 0) {
       res.status(HTTP.OK).json({
@@ -212,13 +214,24 @@ const getJoinListMemberByAuctionID = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
 
 const addMemberToList = async (req, res) => {
   try {
-    const { auctionID, accountID } = req.body;
+    const { auctionID, accountID } = req.params;
+
+    const checkIfMemberExist = await auctionModel.findOne({
+      _id: auctionID,
+      joinList: { $in: accountID },
+    });
+
+    if (checkIfMemberExist)
+      return res
+        .status(HTTP.NOT_FOUND)
+        .json({ message: "Member already in list" });
 
     const checkUpdate = await auctionModel.updateOne(
       { _id: auctionID },
@@ -239,17 +252,16 @@ const addMemberToList = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
 
 const removeMemberFromList = async (req, res) => {
   try {
-    const { auctionID, accountID } = req.body;
+    const { auctionID, accountID } = req.params;
 
     const auction = await auctionModel.findOne({ _id: auctionID });
-
-    console.log(accountID);
 
     if (auction.joinList.length > 0) {
       const checkUpdate = await auctionModel.updateOne(
@@ -284,7 +296,6 @@ const removeMemberFromList = async (req, res) => {
 const updateAuction = async (req, res) => {
   try {
     const {
-      _id,
       name,
       startPrice,
       priceStep,
@@ -297,6 +308,8 @@ const updateAuction = async (req, res) => {
       buyNowPrice,
       realEstateID,
     } = req.body;
+
+    const _id = req.params.id;
 
     const newValues = {
       name,
@@ -316,25 +329,25 @@ const updateAuction = async (req, res) => {
       (check) => check === newValues.status
     );
 
+    if (!isValidStatus)
+      return res.status(HTTP.NOT_FOUND).json({ message: "Status not valid" });
+
     const oldValues = await auctionModel.findOne(
       { _id },
       { _id: 0, createdAt: 0, updatedAt: 0, __v: 0 }
     );
 
     const valuesChanged = Object.keys(newValues).some((key) => {
+      console.log(key + ": " + oldValues[key]);
+      console.log(key + ": " + newValues[key]);
       const oldValueJSON = JSON.stringify(oldValues[key]);
       const newValueJSON = JSON.stringify(newValues[key]);
 
       return oldValueJSON !== newValueJSON;
     });
 
-    if (valuesChanged && isValidStatus) {
-      const checkUpdate = await auctionModel.updateOne(
-        { _id },
-        {
-          newValues,
-        }
-      );
+    if (valuesChanged) {
+      const checkUpdate = await auctionModel.updateOne({ _id }, newValues);
 
       if (!checkUpdate.modifiedCount > 0) {
         res.status(HTTP.BAD_REQUEST).json({
@@ -365,9 +378,13 @@ const removeAuction = async (req, res) => {
   try {
     const _id = req.params.id;
 
-    const checkRemoveAuction = await auctionModel.deleteOne({ _id });
+    const checkRemoveAuction = await auctionModel.findOneAndUpdate(
+      { _id },
+      { isActive: true },
+      { new: true }
+    );
 
-    if (checkRemoveAuction.deletedCount > 0) {
+    if (checkRemoveAuction.isActive === false) {
       res.status(HTTP.OK).json({
         success: true,
         response: checkRemoveAuction,
@@ -376,7 +393,7 @@ const removeAuction = async (req, res) => {
     } else {
       res.status(HTTP.BAD_REQUEST).json({
         success: false,
-        error: EXCEPTIONS.FAIL_TO_DELETE_ITEM,
+        error: "Remove Auction Fail!!",
       });
     }
   } catch (error) {

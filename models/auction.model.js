@@ -3,14 +3,23 @@ const mongoose = require("mongoose");
 const auctionSchema = mongoose.Schema(
   {
     name: { type: String, required: true },
+
     startPrice: { type: Number, required: true },
+
     priceStep: { type: Number, min: 0, required: true },
+
     day: { type: Number, min: 0 },
+
     hour: { type: Number, min: 0, max: 24 },
+
     minute: { type: Number, min: 0, max: 60 },
+
     second: { type: Number, min: 0, max: 60 },
+
     numberOfBidder: { type: Number, min: 0, default: 0 },
+
     description: { type: String, required: true },
+
     status: {
       type: String,
       default: "Wait For Approval",
@@ -25,9 +34,11 @@ const auctionSchema = mongoose.Schema(
       },
     },
     buyNowPrice: { type: Number },
+
     realEstateID: { type: mongoose.Types.ObjectId },
+
     joinList: {
-      type: [{ type: mongoose.Types.ObjectId, ref: "Member" }],
+      type: [{ type: mongoose.Types.ObjectId, ref: "User" }],
       default: [],
     },
     checkedStatus: {
@@ -38,7 +49,7 @@ const auctionSchema = mongoose.Schema(
       },
     },
 
-    isActive: {},
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
