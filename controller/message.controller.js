@@ -13,7 +13,14 @@ const createMessage = async (req, res) => {
     });
 
     const response = await message.save();
-    res.status(HTTP.INSERT_OK).json({ success: true, response });
+
+    if (response) {
+      res.status(HTTP.INSERT_OK).json({ success: true, response });
+    } else {
+      res
+        .status(HTTP.BAD_REQUEST)
+        .json({ success: false, error: "Fail to send message" });
+    }
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
@@ -22,8 +29,15 @@ const createMessage = async (req, res) => {
 const getMessages = async (req, res) => {
   try {
     const { chatBoxID } = req.params;
+
     const messages = await messageModel.find({ chatBoxID });
-    res.status(HTTP.OK).json({ success: true, response: messages });
+    if (messages) {
+      res.status(HTTP.OK).json({ success: true, response: messages });
+    } else {
+      res
+        .status(HTTP.BAD_REQUEST)
+        .json({ success: false, error: "Fail to get message" });
+    }
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }

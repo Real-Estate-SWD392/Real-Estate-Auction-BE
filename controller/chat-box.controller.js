@@ -22,7 +22,13 @@ const createChatBox = async (req, res) => {
 
     const response = await newChat.save();
 
-    res.status(HTTP.INSERT_OK).json({ success: true, response });
+    if (response) {
+      res.status(HTTP.INSERT_OK).json({ success: true, response });
+    } else {
+      res
+        .status(HTTP.BAD_REQUEST)
+        .json({ success: false, error: "Fail to create box chat" });
+    }
   } catch (error) {
     res.status(HTTP.BAD_REQUEST).json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
   }
@@ -32,11 +38,18 @@ const createChatBox = async (req, res) => {
 const findChatBoxByUser = async (req, res) => {
   try {
     const userID = req.params.id;
+
     const chatboxes = await chatBoxModel.find({
       members: { $in: [userID] },
     });
 
-    res.status(HTTP.OK).json({ success: true, response: chatboxes });
+    if (chatboxes) {
+      res.status(HTTP.OK).json({ success: true, response: chatboxes });
+    } else {
+      res
+        .status(HTTP.BAD_REQUEST)
+        .json({ success: false, error: "Fail to find chat box" });
+    }
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
