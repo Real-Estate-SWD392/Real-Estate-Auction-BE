@@ -17,6 +17,9 @@ const memberRouter = require("./router/member.router");
 const auctionRouter = require("./router/auction.router");
 const provinceRouter = require("./router/province.router");
 const addressRouter = require("./router/address.router");
+const chatBoxRouter = require("./router/chat-box.router");
+const messageRouter = require("./router/message.router");
+
 const passport = require("passport");
 const authenticateJWT = require("./utils/authenticateJWT");
 
@@ -61,6 +64,8 @@ app.use("/member", authenticateJWT, memberRouter);
 app.use("/auction", authenticateJWT, auctionRouter);
 app.use("/province", authenticateJWT, provinceRouter);
 app.use("/address", addressRouter);
+app.use("/chatbox", chatBoxRouter);
+app.use("/message", messageRouter);
 app.use("/account", accountRouter);
 
 // CONNECT TO PORT
