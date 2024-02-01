@@ -4,6 +4,9 @@ const cors = require("cors");
 const cookie = require("cookie-session");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const swaggerJSDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs");
 require("dotenv").config();
 
 // DEFINE DATABASE
@@ -23,11 +26,40 @@ const messageRouter = require("./router/message.router");
 const passport = require("passport");
 const authenticateJWT = require("./utils/authenticateJWT");
 
-// DEFINE EXPRESS
 const app = express();
+
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    // "https://f-clubs-event-management.vercel.app",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: [
+    "Origin",
+    "X-Requested-With",
+    "Content-Type",
+    "Accept",
+    "Authorization",
+    "authorization",
+  ],
+};
+
+app.get("/api", (req, res) => {
+  fs.readFile("docs/apiDocs.json", (err, data) => {
+    if (err) {
+      res.status(400).json({
+        error: err,
+      });
+    }
+    const docs = JSON.parse(data);
+    res.json(docs);
+  });
+});
+// DEFINE EXPRESS
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(
   cookie({
@@ -61,7 +93,7 @@ const port = parseInt(process.env.PORT) || 5000;
 app.use("/auth", authRouter);
 app.use("/real-estate", authenticateJWT, realEstateRouter);
 app.use("/member", authenticateJWT, memberRouter);
-app.use("/auction", authenticateJWT, auctionRouter);
+app.use("/auction", auctionRouter);
 app.use("/province", authenticateJWT, provinceRouter);
 app.use("/address", addressRouter);
 app.use("/chatbox", chatBoxRouter);
