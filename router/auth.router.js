@@ -25,6 +25,9 @@ router.post("/resetPassword", resetPassword);
 // LOGIN WITH GOOGLE (OAUTH2)
 router.get(
   "/google",
+  (req, res, next) => {
+    next();
+  },
   passport.authenticate("google", { scope: ["email", "profile"] })
 );
 

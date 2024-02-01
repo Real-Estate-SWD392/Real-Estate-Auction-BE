@@ -1,7 +1,7 @@
 const passport = require("passport");
-const { memberModel } = require("../models/member.model");
 const accountModel = require("../models/account.model");
-const { check } = require("express-validator");
+const userModel = require("../models/user.model");
+const { generateTokens } = require("../utils/generateAccountToken");
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
 passport.serializeUser((user, done) => {
@@ -9,7 +9,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-  memberModel.findById(id).then((user) => {
+  userModel.findById(id).then((user) => {
     done(null, user);
   });
 });
@@ -26,31 +26,31 @@ passport.use(
       try {
         // Check if google profile exists.
         if (profile) {
-          const existingUser = await memberModel.findOne({
+          const existingUser = await userModel.findOne({
             email: profile.email,
           });
+
           if (existingUser) {
+            const { accessToken, refreshToken } = generateTokens(existingUser);
+            req.headers["Authorization"] = `Bearer ${accessToken}`;
+            req.res.cookie("refreshToken", refreshToken, {
+              httpOnly: true,
+              sameSite: "strict",
+            });
             done(null, existingUser);
-          }
-
-          const account = new accountModel({
-            email: profile.email,
-          });
-
-          const checkAccount = await account.save();
-
-          if (checkAccount) {
-            const newMember = new memberModel({
-              accountID: checkAccount._id,
+          } else {
+            const account = new userModel({
+              email: profile.email,
               firstName: profile.name.givenName,
               lastName: profile.name.familyName,
               email: profile.email,
-              name: profile.name.familyName + " " + profile.name.givenName,
             });
 
-            await newMember.save();
+            const checkAccount = await account.save();
 
-            done(null, newMember);
+            if (checkAccount) {
+              done(null, checkAccount);
+            }
           }
         }
       } catch (error) {

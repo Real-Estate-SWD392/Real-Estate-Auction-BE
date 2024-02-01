@@ -3,7 +3,7 @@ const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTION = require("../exceptions/Exceptions");
 
 const authenticateJWT = (req, res, next) => {
-  const accessToken = req.headers["authorization"];
+  let accessToken = req.headers["authorization"];
   const refreshToken = req.cookies["refreshToken"];
 
   if (!accessToken && !refreshToken) {
@@ -11,6 +11,7 @@ const authenticateJWT = (req, res, next) => {
   }
 
   try {
+    accessToken = accessToken.split("Bearer ")[1];
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET_KEY);
     req.user = decoded;
     next();

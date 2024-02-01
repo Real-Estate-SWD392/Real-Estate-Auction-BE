@@ -35,7 +35,7 @@ const auctionSchema = mongoose.Schema(
     },
     buyNowPrice: { type: Number },
 
-    realEstateID: { type: mongoose.Types.ObjectId },
+    realEstateID: { type: mongoose.Types.ObjectId, ref: "Real-Estate" },
 
     joinList: {
       type: [{ type: mongoose.Types.ObjectId, ref: "User" }],

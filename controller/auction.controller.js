@@ -28,7 +28,9 @@ const getAuctionByID = async (req, res) => {
   try {
     const _id = req.params.id;
 
-    const auction = await auctionModel.findOne({ _id });
+    const auction = await auctionModel
+      .findOne({ _id })
+      .populate("realEstateID");
 
     if (auction) {
       res.status(HTTP.OK).json({

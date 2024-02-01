@@ -110,7 +110,7 @@ const loginAccount = async (req, res) => {
         httpOnly: true,
         sameSite: "strict",
       })
-      .header("authorization", accessToken)
+      .header("authorization", `Bearer ${accessToken}`)
       .status(HTTP.OK)
       .json({
         succes: true,
