@@ -2,12 +2,10 @@ const { default: mongoose } = require("mongoose");
 const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const { auctionModel, auctionEnums } = require("../models/auction.model");
-const addressModel = require("../models/address.model");
 
 const getAllAuction = async (req, res) => {
   try {
-    const auctions = await auctionModel.find({});
-
+    const auctions = await auctionModel.find({}).populate("realEstateID");
     if (auctions.length > 0) {
       res.status(HTTP.OK).json({
         success: true,

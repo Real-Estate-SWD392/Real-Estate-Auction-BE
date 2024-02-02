@@ -8,6 +8,8 @@ const auctionSchema = mongoose.Schema(
 
     priceStep: { type: Number, min: 0, required: true },
 
+    currentPrice: { type: Number },
+
     day: { type: Number, min: 0 },
 
     hour: { type: Number, min: 0, max: 24 },

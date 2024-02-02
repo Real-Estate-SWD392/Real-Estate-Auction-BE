@@ -33,11 +33,10 @@ const authenticateJWT = (req, res, next) => {
           httpOnly: true,
           sameSite: "strict",
         })
-        .header("Authorization", accessToken)
-        .json({
-          message: "Create New Access Token Complete!!",
-          decoded,
-        });
+        .header("Authorization", accessToken);
+
+      req.user = decoded;
+      next();
     } catch (error) {
       return res.status(HTTP.BAD_REQUEST).json({
         message: "Invalid Token",
