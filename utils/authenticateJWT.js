@@ -33,7 +33,8 @@ const authenticateJWT = (req, res, next) => {
           httpOnly: true,
           sameSite: "strict",
         })
-        .header("Authorization", accessToken);
+        .header("Authorization", accessToken)
+        .json({ message: "Create access token" });
 
       req.user = decoded;
       next();

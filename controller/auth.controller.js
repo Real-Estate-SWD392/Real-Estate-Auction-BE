@@ -101,7 +101,7 @@ const loginAccount = async (req, res) => {
         error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
       });
 
-    const member = await memberModel.findOne({ email });
+    const member = await userModel.findOne({ email });
 
     const { accessToken, refreshToken } = await generateTokens(user);
 

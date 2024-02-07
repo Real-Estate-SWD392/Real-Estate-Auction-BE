@@ -1,12 +1,12 @@
-const { memberModel } = require("../models/member.model");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const HTTP = require("../HTTP/HttpStatusCode");
+const userModel = require("../models/user.model");
 
 const getMemberByID = async (req, res) => {
   try {
-    const id = req.params.id;
+    const _id = req.params.id;
 
-    const member = await memberModel.findOne({ _id: id });
+    const member = await userModel.findOne({ _id });
 
     if (member) {
       res.status(HTTP.OK).json({
@@ -20,6 +20,7 @@ const getMemberByID = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -28,7 +29,7 @@ const editProfileMemberByID = async (req, res) => {
   try {
     const id = req.params.id;
     const { firstName, lastName, phoneNumber } = req.body;
-    const updateMember = await memberModel.findByIdAndUpdate(
+    const updateMember = await userModel.findByIdAndUpdate(
       id,
       { firstName, lastName, phoneNumber },
       {
@@ -55,7 +56,7 @@ const editProfileMemberByID = async (req, res) => {
 const addAuctionToFavoriteList = async (req, res) => {
   try {
     const id = req.params.id;
-    const addFavoriteAuction = await memberModel.findOneAndUpdate(
+    const addFavoriteAuction = await userModel.findOneAndUpdate(
       { _id: id },
       { $push: { favoriteList: req.body } },
       { new: true }

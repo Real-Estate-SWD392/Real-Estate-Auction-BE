@@ -18,7 +18,6 @@ const getAllRealEstate = async (req, res) => {
         success: true,
         response: {
           realEstate,
-          address,
         },
       });
     } else {
@@ -27,6 +26,7 @@ const getAllRealEstate = async (req, res) => {
         .json({ success: false, error: EXCEPTIONS.FAIL_TO_GET_ITEM });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -276,13 +276,11 @@ const removeRealEstate = async (req, res) => {
       });
 
     if (checkRealEstateRemove.isActive === false) {
-      res
-        .status(HTTP.OK)
-        .json({
-          success: true,
-          response: checkRealEstateRemove,
-          message: "Remove Real Estate Complete!",
-        });
+      res.status(HTTP.OK).json({
+        success: true,
+        response: checkRealEstateRemove,
+        message: "Remove Real Estate Complete!",
+      });
     } else {
       res
         .status(HTTP.BAD_REQUEST)

@@ -1,13 +1,13 @@
 module.exports = {
   delete: {
-    tags: ["Calendar"],
-    summary: "delete Calendar",
+    tags: ["Auction"],
+    summary: "delete auction",
     parameters: [
       {
         in: "path",
-        name: "calendarId",
+        name: "auctionID",
         security: [{ BearerAuth: [] }],
-        description: "calendar ID",
+        description: "Auction ID",
         schema: {
           type: "string",
           format: "ObjectId",
