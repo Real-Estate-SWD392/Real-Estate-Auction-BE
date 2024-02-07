@@ -8,6 +8,7 @@ const {
 const multer = require("multer");
 const { default: mongoose } = require("mongoose");
 const _ = require("lodash");
+const { upload, uploadFiles } = require("../config/firebase");
 
 const getAllRealEstate = async (req, res) => {
   try {
@@ -295,46 +296,73 @@ const removeRealEstate = async (req, res) => {
 };
 
 const uploadPDF = async (req, res) => {
-  const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, "../client/public/PDFs");
-    },
-    filename: function (req, file, cb) {
-      cb(null, Date.now() + file.originalname);
-    },
-  });
+  // const storage = multer.diskStorage({
+  //   destination: function (req, file, cb) {
+  //     cb(null, "../client/public/PDFs");
+  //   },
+  //   filename: function (req, file, cb) {
+  //     cb(null, Date.now() + file.originalname);
+  //   },
+  // });
 
-  const uploadMultiple = multer({ storage: storage }).array("pdf", 12);
+  // const uploadMultiple = multer({ storage: storage }).array("pdf", 12);
 
-  uploadMultiple(req, res, function (err) {
+  const uploadMultiple = upload.array("pdf", 12);
+
+  uploadMultiple(req, res, async function (err) {
     if (err) {
-      return res.status(500).json({ error: err });
+      return res.status(HTTP.BAD_REQUEST).json({ error: err });
     }
 
     const files = req.files;
-    res.status(200).json(files);
+    if (files)
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ message: "No files to upload!!" });
+    const folder = "pdf";
+
+    const fileURL = await uploadFiles(files, folder);
+
+    if (!fileURL) {
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ message: "Upload file fail!!" });
+    }
+    return res.status(HTTP.OK).json({ success: true, file: fileURL });
   });
 };
 
 const uploadImages = async (req, res) => {
-  const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, "../client/public/images");
-    },
-    filename: function (req, file, cb) {
-      cb(null, Date.now() + file.originalname);
-    },
-  });
+  // const storage = multer.diskStorage({
+  //   destination: function (req, file, cb) {
+  //     cb(null, "../client/public/images");
+  //   },
+  //   filename: function (req, file, cb) {
+  //     cb(null, Date.now() + file.originalname);
+  //   },
+  // });
 
-  const uploadMultiple = multer({ storage: storage }).array("images", 12);
+  const uploadMultiple = upload.array("image", 12);
 
-  uploadMultiple(req, res, function (err) {
+  uploadMultiple(req, res, async function (err) {
     if (err) {
-      return res.status(500).json({ error: err });
+      return res.status(HTTP.BAD_REQUEST).json({ error: err });
     }
 
     const files = req.files;
-    res.status(200).json(files);
+    const folder = "img";
+
+    if (files)
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ message: "No files to upload!!" });
+
+    const fileURL = await uploadFiles(files, folder);
+
+    if (!fileURL) {
+      return res.status(HTTP.BAD_REQUEST).json({ message: "Upload file fail" });
+    }
+    return res.status(HTTP.OK).json({ success: true, file: fileURL });
   });
 };
 
