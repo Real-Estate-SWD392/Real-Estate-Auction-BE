@@ -2,7 +2,11 @@ const jwt = require("jsonwebtoken");
 
 const generateTokens = async (account) => {
   try {
-    const payload = { _id: account._id, email: account.email };
+    const payload = {
+      _id: account._id,
+      email: account.email,
+      role: account.role,
+    };
 
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
       expiresIn: "17m",

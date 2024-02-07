@@ -26,6 +26,8 @@ const bidRouter = require("./router/bid.router");
 
 const passport = require("passport");
 const authenticateJWT = require("./utils/authenticateJWT");
+const authorization = require("./utils/authorization");
+const { STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE } = require("./constant/role");
 
 const app = express();
 
@@ -92,15 +94,40 @@ const port = parseInt(process.env.PORT) || 5000;
 
 // DEFINE ROUTER LINK
 app.use("/auth", authRouter);
-app.use("/real-estate", authenticateJWT, realEstateRouter);
-app.use("/member", authenticateJWT, memberRouter);
-app.use("/auction", auctionRouter);
+app.use(
+  "/real-estate",
+  authenticateJWT,
+  authorization([STAFF_ROLE, MEMBER_ROLE]),
+  realEstateRouter
+);
+app.use(
+  "/member",
+  authenticateJWT,
+  authorization([STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE]),
+  memberRouter
+);
+app.use("/auction", authorization([STAFF_ROLE, MEMBER_ROLE]), auctionRouter);
 app.use("/province", authenticateJWT, provinceRouter);
 app.use("/address", addressRouter);
-app.use("/chatbox", authenticateJWT, chatBoxRouter);
-app.use("/message", authenticateJWT, messageRouter);
+app.use(
+  "/chatbox",
+  authenticateJWT,
+  authorization([STAFF_ROLE, MEMBER_ROLE]),
+  chatBoxRouter
+);
+app.use(
+  "/message",
+  authenticateJWT,
+  authorization([STAFF_ROLE, MEMBER_ROLE]),
+  messageRouter
+);
 app.use("/account", accountRouter);
-app.use("/bid", authenticateJWT, bidRouter);
+app.use(
+  "/bid",
+  authenticateJWT,
+  authorization([STAFF_ROLE, MEMBER_ROLE]),
+  bidRouter
+);
 
 // CONNECT TO PORT
 app.listen(port, (req, res) => {
