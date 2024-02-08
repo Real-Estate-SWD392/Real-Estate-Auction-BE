@@ -2,19 +2,19 @@ const jwt = require("jsonwebtoken");
 
 const generateTokens = async (account) => {
   try {
-    const payload = {
-      _id: account._id,
-      email: account.email,
-      role: account.role,
-    };
-
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+    let accessToken = jwt.sign(account.toJSON(), process.env.JWT_SECRET_KEY, {
       expiresIn: "17m",
     });
 
-    const refreshToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-      expiresIn: "30d",
-    });
+    const refreshToken = jwt.sign(
+      account.toJSON(),
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "30d",
+      }
+    );
+
+    accessToken = `Bearer ${accessToken}`;
 
     return Promise.resolve({ accessToken, refreshToken });
   } catch (err) {
@@ -24,9 +24,7 @@ const generateTokens = async (account) => {
 
 const generateResetToken = async (account) => {
   try {
-    const payload = { _id: account._id, email: account.email };
-
-    const resetToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+    const resetToken = jwt.sign(account.toJSON(), process.env.JWT_SECRET_KEY, {
       expiresIn: "1h",
     });
 

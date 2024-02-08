@@ -4,7 +4,6 @@ const EXCEPTION = require("../exceptions/Exceptions");
 const authorization = (roles = []) => {
   return (req, res, next) => {
     // Check if user role is allowed to access the route
-    console.log(req.user);
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(HTTP.FORBIDDEN).json({ message: "Unauthorized" });
     }

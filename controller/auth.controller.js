@@ -101,8 +101,6 @@ const loginAccount = async (req, res) => {
         error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
       });
 
-    const member = await userModel.findOne({ email });
-
     const { accessToken, refreshToken } = await generateTokens(user);
 
     res
@@ -110,11 +108,11 @@ const loginAccount = async (req, res) => {
         httpOnly: true,
         sameSite: "strict",
       })
-      .header("authorization", `Bearer ${accessToken}`)
+      .header("authorization", accessToken)
       .status(HTTP.OK)
       .json({
         succes: true,
-        response: member,
+        response: user,
         accessToken,
         refreshToken,
         message: "Logged in sucessfully",
@@ -226,8 +224,6 @@ const verifyEmail = async (req, res) => {
   try {
     const _id = req.query.userID;
     const verifyToken = req.query.verifyToken;
-
-    console.log(verifyToken);
 
     if (!verifyToken)
       return res.status(HTTP.NOT_FOUND).json("Email Token not found!!");

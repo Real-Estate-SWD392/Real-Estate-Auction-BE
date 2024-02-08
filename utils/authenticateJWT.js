@@ -22,19 +22,18 @@ const authenticateJWT = (req, res, next) => {
 
     try {
       const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET_KEY);
-      const payload = { _id: decoded._id, email: decoded.email };
 
-      const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-        expiresIn: "17m",
-      });
+      const accessToken = jwt.sign(decoded, process.env.JWT_SECRET_KEY);
 
-      res
-        .cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          sameSite: "strict",
-        })
-        .header("Authorization", accessToken)
-        .json({ message: "Create access token" });
+      // res
+      //   .cookie("refreshToken", refreshToken, {
+      //     httpOnly: true,
+      //     sameSite: "strict",
+      //   })
+      //   .header("Authorization", accessToken)
+      //   .json({ message: "Create access token" });
+
+      res.set("Authorization", `Bearer ${accessToken}`);
 
       req.user = decoded;
       next();

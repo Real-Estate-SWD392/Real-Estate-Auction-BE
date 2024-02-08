@@ -315,7 +315,7 @@ const uploadPDF = async (req, res) => {
     }
 
     const files = req.files;
-    if (files)
+    if (files.length < 1)
       return res
         .status(HTTP.BAD_REQUEST)
         .json({ message: "No files to upload!!" });
@@ -351,8 +351,7 @@ const uploadImages = async (req, res) => {
 
     const files = req.files;
     const folder = "img";
-
-    if (files)
+    if (files.length < 1)
       return res
         .status(HTTP.BAD_REQUEST)
         .json({ message: "No files to upload!!" });
