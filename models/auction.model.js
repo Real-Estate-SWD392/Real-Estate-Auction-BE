@@ -20,8 +20,6 @@ const auctionSchema = mongoose.Schema(
 
     numberOfBidder: { type: Number, min: 0, default: 0 },
 
-    description: { type: String, required: true },
-
     status: {
       type: String,
       default: "Wait For Approval",

@@ -8,6 +8,8 @@ const realEstateSchema = new mongoose.Schema(
 
     size: { type: Number, min: 10 },
 
+    description: { type: String },
+
     type: {
       type: String,
       enum: {
