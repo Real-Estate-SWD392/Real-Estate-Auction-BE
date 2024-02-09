@@ -44,6 +44,7 @@ passport.use(
               firstName: profile.name.givenName,
               lastName: profile.name.familyName,
               email: profile.email,
+              isVerified: true,
             });
 
             const checkAccount = await account.save();

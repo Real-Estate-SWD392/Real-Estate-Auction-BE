@@ -1,5 +1,6 @@
 const express = require("express");
 const passport = require("passport");
+const HTTP = require("../HTTP/HttpStatusCode");
 const {
   loginValidator,
   registerValidator,
@@ -40,11 +41,13 @@ router.get(
 );
 
 router.get("/google/success", (req, res) => {
-  res.redirect("http://localhost:3000/homepage");
+  res.status(HTTP.OK).json({ success: true, response: req.user });
 });
 
 router.get("/google/failure", (req, res) => {
-  res.send("Fail");
+  res
+    .status(HTTP.BAD_REQUEST)
+    .json({ success: false, message: "Login with Google fail!" });
 });
 
 module.exports = router;
