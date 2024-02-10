@@ -98,7 +98,7 @@ const loginAccount = async (req, res) => {
     if (!user.isVerified)
       return res.status(HTTP.UNAUTHORIZED).json({
         success: false,
-        error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
+        error: "Your account is not verifed",
       });
 
     const { accessToken, refreshToken } = await generateTokens(user);
@@ -108,7 +108,7 @@ const loginAccount = async (req, res) => {
         httpOnly: true,
         sameSite: "strict",
       })
-      .header("authorization", accessToken)
+      .header("authorization", `Bearer ${accessToken}`)
       .status(HTTP.OK)
       .json({
         succes: true,

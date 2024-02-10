@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const generateTokens = async (account) => {
   try {
-    let accessToken = jwt.sign(account.toJSON(), process.env.JWT_SECRET_KEY, {
+    const accessToken = jwt.sign(account.toJSON(), process.env.JWT_SECRET_KEY, {
       expiresIn: "17m",
     });
 
@@ -13,8 +13,6 @@ const generateTokens = async (account) => {
         expiresIn: "30d",
       }
     );
-
-    accessToken = `Bearer ${accessToken}`;
 
     return Promise.resolve({ accessToken, refreshToken });
   } catch (err) {

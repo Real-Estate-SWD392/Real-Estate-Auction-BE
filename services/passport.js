@@ -31,12 +31,6 @@ passport.use(
           });
 
           if (existingUser) {
-            const { accessToken, refreshToken } = generateTokens(existingUser);
-            req.headers["Authorization"] = `Bearer ${accessToken}`;
-            req.res.cookie("refreshToken", refreshToken, {
-              httpOnly: true,
-              sameSite: "strict",
-            });
             done(null, existingUser);
           } else {
             const account = new userModel({

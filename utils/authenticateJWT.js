@@ -3,7 +3,7 @@ const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTION = require("../exceptions/Exceptions");
 
 const authenticateJWT = (req, res, next) => {
-  let accessToken = req.headers["authorization"];
+  let accessToken = req.headers["authorization"].split("Bearer ")[1];
   const refreshToken = req.cookies["refreshToken"];
 
   if (!accessToken && !refreshToken) {
@@ -11,7 +11,6 @@ const authenticateJWT = (req, res, next) => {
   }
 
   try {
-    accessToken = accessToken.split("Bearer ")[1];
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET_KEY);
     req.user = decoded;
     next();
@@ -22,16 +21,9 @@ const authenticateJWT = (req, res, next) => {
 
     try {
       const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET_KEY);
+      console.log(decoded);
 
       const accessToken = jwt.sign(decoded, process.env.JWT_SECRET_KEY);
-
-      // res
-      //   .cookie("refreshToken", refreshToken, {
-      //     httpOnly: true,
-      //     sameSite: "strict",
-      //   })
-      //   .header("Authorization", accessToken)
-      //   .json({ message: "Create access token" });
 
       res.set("Authorization", `Bearer ${accessToken}`);
 

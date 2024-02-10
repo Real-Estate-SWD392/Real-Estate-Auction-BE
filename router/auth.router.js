@@ -12,6 +12,7 @@ const {
   verifyEmail,
   resetPassword,
 } = require("../controller/auth.controller");
+const { generateTokens } = require("../utils/generateAccountToken");
 require("../services/passport");
 
 const router = express.Router();
@@ -40,8 +41,24 @@ router.get(
   })
 );
 
-router.get("/google/success", (req, res) => {
-  res.status(HTTP.OK).json({ success: true, response: req.user });
+router.get("/google/success", async (req, res) => {
+  const user = req.user;
+  const { accessToken, refreshToken } = await generateTokens(user);
+
+  res
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+    })
+    .header("authorization", `Bearer ${accessToken}`)
+    .status(HTTP.OK)
+    .json({
+      succes: true,
+      response: user,
+      accessToken,
+      refreshToken,
+      message: "Logged Google Successfully",
+    });
 });
 
 router.get("/google/failure", (req, res) => {
