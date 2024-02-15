@@ -106,7 +106,7 @@ app.use(
   authorization([STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE]),
   memberRouter
 );
-app.use("/auction", authorization([STAFF_ROLE, MEMBER_ROLE]), auctionRouter);
+app.use("/auction", auctionRouter);
 app.use("/province", authenticateJWT, provinceRouter);
 app.use("/address", addressRouter);
 app.use(
@@ -121,7 +121,7 @@ app.use(
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   messageRouter
 );
-app.use("/account", accountRouter);
+app.use("/account", authenticateJWT, accountRouter);
 app.use(
   "/bid",
   authenticateJWT,
