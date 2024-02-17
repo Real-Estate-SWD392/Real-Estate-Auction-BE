@@ -79,8 +79,49 @@ const addAuctionToFavoriteList = async (req, res) => {
   }
 };
 
+const ratingOwnerAuction = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { userId, rating } = req.body;
+    console.log("s", req.body);
+    // Tìm user theo id
+    const user = await userModel.findOne({ _id: id });
+    // Kiểm tra xem userId đã tồn tại trong listRatingByUser hay chưa
+    const hasRated = user.listRatingByUser.some(
+      (rating) => rating.userId === userId
+    );
+    if (hasRated) {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: true,
+        message: "You have already rated!!",
+      });
+    } else {
+      const ratingOwnerAuction = await userModel.findOneAndUpdate(
+        { _id: id },
+        { $push: { listRatingByUser: { userId: userId, rating: rating } } },
+        { new: true }
+      );
+      if (ratingOwnerAuction) {
+        res.status(HTTP.OK).json({
+          success: true,
+          message: "Rating successfully!!",
+          response: ratingOwnerAuction,
+        });
+      } else {
+        res.status(HTTP.BAD_REQUEST).json({
+          success: false,
+          message: EXCEPTIONS.FAIL_TO_RATING_OWNER_AUCTION,
+        });
+      }
+    }
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
 module.exports = {
   getMemberByID,
   editProfileMemberByID,
   addAuctionToFavoriteList,
+  ratingOwnerAuction,
 };

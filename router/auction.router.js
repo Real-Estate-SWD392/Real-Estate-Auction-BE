@@ -12,6 +12,8 @@ const {
   getJoinListMemberByAuctionID,
   sortAuctionByTime,
   filterAuction,
+  deleteAuctionByStaff,
+  handleAuctionRequest,
 } = require("../controller/auction.controller");
 const authenticateJWT = require("../utils/authenticateJWT");
 const authorization = require("../utils/authorization");
@@ -63,6 +65,19 @@ router.put(
   authenticateJWT,
   authorization([STAFF_ROLE]),
   removeAuction
+);
+
+router.delete(
+  "/deleteAuction/:id",
+  authenticateJWT,
+  authorization([STAFF_ROLE]),
+  deleteAuctionByStaff
+);
+router.put(
+  "/handleAuctionRequest/:id",
+  authenticateJWT,
+  authorization([STAFF_ROLE]),
+  handleAuctionRequest
 );
 
 module.exports = router;

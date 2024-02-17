@@ -1,6 +1,16 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
+// const ratingSchema = new mongoose.Schema(
+//   {
+//     rating: { type: Number, min: 1, max: 5, require: true },
+//     userId: {
+//       type: String,
+//     },
+//   },
+//   { timestamps: true }
+// );
+
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, minLength: 5, required: true, unique: true },
@@ -34,6 +44,15 @@ const userSchema = new mongoose.Schema(
     resetToken: { type: String },
 
     resetTokenExpires: { type: Date },
+
+    listRatingByUser: [
+      {
+        rating: { type: Number, min: 1, max: 5, require: true },
+        userId: {
+          type: String,
+        },
+      },
+    ],
 
     role: {
       type: String,

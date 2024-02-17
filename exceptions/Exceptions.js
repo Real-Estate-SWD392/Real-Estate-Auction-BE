@@ -10,6 +10,8 @@ const Exceptions = {
   FAIL_TO_UPDATE_ITEM: "Fail to update data!!",
   FAIL_TO_DELETE_ITEM: "Fail to delete data!!",
   FAIL_TO_ADD_FAVORITE: "Add auction to favorite list fail!!",
+  ALREADY_RATING_OWNER_AUCTION: "You are already rating this owner!!",
+  FAIL_TO_RATING_OWNER_AUCTION: "Your rating fail!!",
 
   // VALIDATE EXCEPTIONS
   USER_HAS_EXIST: "This user already has an account!!",

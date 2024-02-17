@@ -5,6 +5,7 @@ const EXCEPTION = require("../exceptions/Exceptions");
 const authenticateJWT = (req, res, next) => {
   let accessToken = req.headers["authorization"].split("Bearer ")[1];
   const refreshToken = req.cookies["refreshToken"];
+  console.log("ahsgkaj");
 
   console.log(refreshToken);
 

@@ -9,7 +9,6 @@ const {
   sendForgotPasswordMail,
 } = require("../services/email");
 const path = require("path");
-const { memberModel } = require("../models/member.model");
 const {
   generateTokens,
   generateResetToken,
@@ -107,6 +106,8 @@ const loginAccount = async (req, res) => {
         success: false,
         error: "Your account is not verifed",
       });
+
+    const member = await userModel.findOne({ email });
 
     const { accessToken, refreshToken } = await generateTokens(user);
 
