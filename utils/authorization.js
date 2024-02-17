@@ -5,7 +5,10 @@ const authorization = (roles = []) => {
   return (req, res, next) => {
     // Check if user role is allowed to access the route
     if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(HTTP.FORBIDDEN).json({ message: "Unauthorized" });
+      return (
+        console.log("moon: ", req?.user),
+        res.status(HTTP.FORBIDDEN).json({ message: "Unauthorized" })
+      );
     }
     next();
   };
