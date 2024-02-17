@@ -36,6 +36,7 @@ const corsOptions = {
     "http://localhost:3000",
     // "https://f-clubs-event-management.vercel.app",
   ],
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: [
     "Origin",

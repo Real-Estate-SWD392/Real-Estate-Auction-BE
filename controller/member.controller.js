@@ -28,10 +28,11 @@ const getMemberByID = async (req, res) => {
 const editProfileMemberByID = async (req, res) => {
   try {
     const id = req.params.id;
-    const { firstName, lastName, phoneNumber } = req.body;
+    const { firstName, lastName, phoneNumber, street, ward, district, city } =
+      req.body;
     const updateMember = await userModel.findByIdAndUpdate(
       id,
-      { firstName, lastName, phoneNumber },
+      { firstName, lastName, phoneNumber, street, ward, district, city },
       {
         new: true,
       }
@@ -61,6 +62,7 @@ const addAuctionToFavoriteList = async (req, res) => {
       { $push: { favoriteList: req.body } },
       { new: true }
     );
+
     if (addFavoriteAuction) {
       res.status(HTTP.OK).json({
         success: true,

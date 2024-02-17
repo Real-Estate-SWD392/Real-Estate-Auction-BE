@@ -15,6 +15,8 @@ const userSchema = new mongoose.Schema(
 
     street: { type: String, minLength: 2 },
 
+    ward: { type: String, minLength: 2 },
+
     district: { type: String, minLength: 2 },
 
     city: { type: String, minLength: 2 },

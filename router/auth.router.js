@@ -11,6 +11,7 @@ const {
   forgotPassword,
   verifyEmail,
   resetPassword,
+  logoutAccount,
 } = require("../controller/auth.controller");
 const { generateTokens } = require("../utils/generateAccountToken");
 require("../services/passport");
@@ -23,6 +24,7 @@ router.post("/login", loginValidator, loginAccount);
 router.post("/register", registerValidator, registerAccount);
 router.post("/forgotPassword", forgotPassword);
 router.post("/resetPassword", resetPassword);
+router.post("/logout", logoutAccount);
 
 // LOGIN WITH GOOGLE (OAUTH2)
 router.get(

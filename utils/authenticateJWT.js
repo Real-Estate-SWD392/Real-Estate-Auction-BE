@@ -6,8 +6,10 @@ const authenticateJWT = (req, res, next) => {
   let accessToken = req.headers["authorization"].split("Bearer ")[1];
   const refreshToken = req.cookies["refreshToken"];
 
+  console.log(refreshToken);
+
   if (!accessToken && !refreshToken) {
-    return res.status(HTTP.UNAUTHORIZED).send(EXCEPTION.ACCESS_DENIED);
+    return res.status(HTTP.UNAUTHORIZED).json(EXCEPTION.ACCESS_DENIED);
   }
 
   try {
@@ -15,13 +17,16 @@ const authenticateJWT = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.log(error);
     if (!refreshToken) {
-      return res.status(HTTP.UNAUTHORIZED).send(EXCEPTION.ACCESS_DENIED);
+      console.log("abc");
+      return res
+        .status(HTTP.UNAUTHORIZED)
+        .json({ message: "Refresh Token is null" });
     }
 
     try {
       const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET_KEY);
-      console.log(decoded);
 
       const accessToken = jwt.sign(decoded, process.env.JWT_SECRET_KEY);
 

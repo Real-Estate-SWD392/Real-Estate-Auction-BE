@@ -56,6 +56,19 @@ const registerValidator = [
     .withMessage(
       "Password must contain capital letter, normal letter, number, special charactier"
     ),
+  body("re_password")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage(EXCEPTIONS.PASSWORD_IS_REQUIRED)
+    .bail()
+    .isLength({ min: 5 })
+    .withMessage("Password should be at least 5 characters")
+    .bail()
+    .isStrongPassword()
+    .withMessage(
+      "Password must contain capital letter, normal letter, number, special charactier"
+    ),
 ];
 
 const loginValidator = [

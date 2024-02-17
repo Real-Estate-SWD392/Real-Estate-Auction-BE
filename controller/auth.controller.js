@@ -19,7 +19,14 @@ const { lte } = require("lodash");
 
 const registerAccount = async (req, res) => {
   try {
-    const { firstName, lastName, email, phoneNumber, password } = req.body;
+    const { firstName, lastName, email, phoneNumber, password, re_password } =
+      req.body;
+
+    if (password !== re_password) {
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ message: "Password and Confirm password not the same!!" });
+    }
 
     let checkExistUser = await userModel.findOne({ email });
 
@@ -105,7 +112,7 @@ const loginAccount = async (req, res) => {
 
     res
       .cookie("refreshToken", refreshToken, {
-        httpOnly: true,
+        secure: true,
         sameSite: "strict",
       })
       .header("authorization", `Bearer ${accessToken}`)
