@@ -19,6 +19,7 @@ const getAllAuction = async (req, res) => {
     }
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+    console.log("er: ", error);
   }
 };
 
@@ -397,6 +398,64 @@ const removeAuction = async (req, res) => {
   }
 };
 
+const deleteAuctionByStaff = async (req, res) => {
+  try {
+    const auctionId = req.params.id;
+    await auctionModel.findOneAndDelete({
+      _id: auctionId,
+    });
+
+    res.status(HTTP.OK).json({
+      success: true,
+      message: "Delete auction successfully!",
+    });
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
+      message: "Delete Auction Fail!",
+    });
+  }
+};
+
+const handleAuctionRequest = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { checkedStatus } = req.body;
+    var filteredAuction = null;
+    var messageAution = "";
+    if (checkedStatus === "Accepted") {
+      filteredAuction = await auctionModel.findOneAndUpdate(
+        { _id: id },
+        { checkedStatus, status: "Not Start" },
+        {
+          new: true,
+        }
+      );
+      messageAution = "Accept successfully!";
+    } else if (checkedStatus === "Denied") {
+      filteredAuction = await auctionModel.findOneAndUpdate(
+        { _id: id },
+        { checkedStatus, status: "Cancel" },
+        {
+          new: true,
+        }
+      );
+      messageAution = "Denied successfully!";
+    }
+
+    res.status(HTTP.OK).json({
+      success: true,
+      response: filteredAuction,
+      message: messageAution,
+    });
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
+      message: "Filter Auction Fail!",
+    });
+  }
+};
+
 module.exports = {
   getAllAuction,
   getAuctionByID,
@@ -410,4 +469,6 @@ module.exports = {
   getJoinListMemberByAuctionID,
   sortAuctionByTime,
   filterAuction,
+  deleteAuctionByStaff,
+  handleAuctionRequest,
 };
