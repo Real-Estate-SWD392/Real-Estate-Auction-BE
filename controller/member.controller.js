@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const HTTP = require("../HTTP/HttpStatusCode");
 const userModel = require("../models/user.model");
@@ -6,7 +7,10 @@ const getMemberByID = async (req, res) => {
   try {
     const _id = req.params.id;
 
-    const member = await userModel.findOne({ _id });
+    const member = await userModel.findOne({ _id }).populate({
+      path: "favoriteList",
+      populate: { path: "realEstateID" },
+    });
 
     if (member) {
       res.status(HTTP.OK).json({
@@ -30,6 +34,7 @@ const editProfileMemberByID = async (req, res) => {
     const id = req.params.id;
     const { firstName, lastName, phoneNumber, street, ward, district, city } =
       req.body;
+
     const updateMember = await userModel.findByIdAndUpdate(
       id,
       { firstName, lastName, phoneNumber, street, ward, district, city },
@@ -57,9 +62,16 @@ const editProfileMemberByID = async (req, res) => {
 const addAuctionToFavoriteList = async (req, res) => {
   try {
     const id = req.params.id;
+
+    const { auction } = req.body;
+
     const addFavoriteAuction = await userModel.findOneAndUpdate(
       { _id: id },
-      { $push: { favoriteList: req.body } },
+      {
+        $push: {
+          favoriteList: mongoose.Types.ObjectId.createFromHexString(auction),
+        },
+      },
       { new: true }
     );
 
@@ -75,6 +87,7 @@ const addAuctionToFavoriteList = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };

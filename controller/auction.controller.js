@@ -75,21 +75,16 @@ const getAuctionByName = async (req, res) => {
 
     const regex = new RegExp(name, "i"); // 'i' flag for case-insensitive matching
 
-    const auction = await auctionModel.find({
-      name: { $regex: regex },
-    });
+    const auction = await auctionModel
+      .find({
+        name: { $regex: regex },
+      })
+      .populate("realEstateID");
 
-    if (auction.length > 0) {
-      res.status(HTTP.OK).json({
-        success: true,
-        response: auction,
-      });
-    } else {
-      res.status(HTTP.NOT_FOUND).json({
-        success: false,
-        error: EXCEPTIONS.FAIL_TO_GET_ITEM,
-      });
-    }
+    res.status(HTTP.OK).json({
+      success: true,
+      response: auction,
+    });
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
@@ -377,7 +372,7 @@ const removeAuction = async (req, res) => {
 
     const checkRemoveAuction = await auctionModel.findOneAndUpdate(
       { _id },
-      { isActive: true },
+      { isActive: false },
       { new: true }
     );
 

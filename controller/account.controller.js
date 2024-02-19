@@ -32,14 +32,8 @@ const getAccountByRole = async (req, res) => {
 
 const changeAccountPassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
     const _id = req.params.id;
-
-    if (newPassword === oldPassword)
-      return res.status(HTTP.BAD_REQUEST).json({
-        succes: false,
-        error: "New Password should be different from Old Password",
-      });
 
     const account = await userModel.findOne({ _id });
 
@@ -48,22 +42,34 @@ const changeAccountPassword = async (req, res) => {
       account.password
     );
 
-    if (checkValidPassword) {
-      account.password = newPassword;
-      await account.save();
-
-      return res.status(HTTP.OK).json({
-        succes: true,
-        response: account,
-        message: "Update Password Successfully",
-      });
-    } else {
+    if (!checkValidPassword) {
       return res.status(HTTP.BAD_REQUEST).json({
         succes: false,
         error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
         message: "Old Password not correct!",
       });
     }
+
+    if (newPassword === oldPassword)
+      return res.status(HTTP.BAD_REQUEST).json({
+        succes: false,
+        error: "New Password should be different from Old Password",
+      });
+
+    if (newPassword !== confirmPassword)
+      return res.status(HTTP.BAD_REQUEST).json({
+        succes: false,
+        error: "Repeat Password should be the same whith new password",
+      });
+
+    account.password = newPassword;
+    await account.save();
+
+    return res.status(HTTP.OK).json({
+      succes: true,
+      response: account,
+      message: "Update Password Successfully",
+    });
   } catch (error) {
     res
       .status(HTTP.INTERNAL_SERVER_ERROR)

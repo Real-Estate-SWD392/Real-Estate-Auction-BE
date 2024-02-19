@@ -38,16 +38,10 @@ const getRealEstateByOwner = async (req, res) => {
 
     const realEstate = await realEstateModel.find({ ownerID });
 
-    if (realEstate.length > 0) {
-      res.status(HTTP.OK).json({
-        success: true,
-        response: realEstate,
-      });
-    } else {
-      res
-        .status(HTTP.BAD_REQUEST)
-        .json({ success: false, error: EXCEPTIONS.FAIL_TO_GET_ITEM });
-    }
+    res.status(HTTP.OK).json({
+      success: true,
+      response: realEstate,
+    });
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }

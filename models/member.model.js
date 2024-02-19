@@ -8,7 +8,7 @@ const memberSchema = mongoose.Schema(
     lastName: { type: String, minLength: 2, required: true },
     phoneNumber: { type: String, minLength: 10, required: true },
     idCard: [{ type: String }],
-    favoriteList: [{ type: Object }],
+    favoriteList: [{ type: mongoose.Types.ObjectId, ref: "Auction" }], // Reference to Auction collection
   },
   { timestamps: true }
 );

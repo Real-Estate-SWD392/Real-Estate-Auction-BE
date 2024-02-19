@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
 
     idCard: [{ type: String }],
 
-    favoriteList: [{ type: Object }],
+    favoriteList: [{ type: mongoose.Types.ObjectId, ref: "Auction" }], // Reference to Auction collection
 
     isVerified: { type: Boolean, default: false },
 
