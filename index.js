@@ -25,6 +25,7 @@ const messageRouter = require("./router/message.router");
 const bidRouter = require("./router/bid.router");
 
 const passport = require("passport");
+require("./services/passport");
 const authenticateJWT = require("./utils/authenticateJWT");
 const authorization = require("./utils/authorization");
 const { STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE } = require("./constant/role");

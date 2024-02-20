@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const { auctionModel, auctionEnums } = require("../models/auction.model");
+const { realEstateModel } = require("../models/real-estate.model");
 
 const getAllAuction = async (req, res) => {
   try {
@@ -92,7 +93,28 @@ const getAuctionByName = async (req, res) => {
 
 const sortAuctionByTime = async (req, res) => {
   try {
-    const sortedAuctions = await auctionModel.find({}).sort({ createdAt: 1 });
+    const sortedAuctions = await auctionModel
+      .find({})
+      .sort({ createdAt: -1 })
+      .populate("realEstateID");
+    return res.status(HTTP.OK).json({
+      success: true,
+      response: sortedAuctions,
+    });
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      message: "Sort failed",
+      error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
+const sortAuctionByPopular = async (req, res) => {
+  try {
+    const sortedAuctions = await auctionModel
+      .find({})
+      .sort({ numberOfBidder: -1 })
+      .populate("realEstateID");
     return res.status(HTTP.OK).json({
       success: true,
       response: sortedAuctions,
@@ -107,23 +129,37 @@ const sortAuctionByTime = async (req, res) => {
 
 const filterAuction = async (req, res) => {
   try {
-    const validField = {};
+    let validField = {};
 
     const values = req.query;
 
     Object.keys(values).map((key) => {
       if (values[key] !== "") {
-        validField[key] = values[key];
+        if (key === "bedRoom" || key === "bathRoom") {
+          validField[key] = parseInt(values[key]);
+        } else {
+          validField[key] = values[key];
+        }
       }
     });
 
-    const filteredAuction = await auctionModel.find({ validField });
+    const realEstates = await realEstateModel.find(validField);
+
+    // Extract real estate IDs from the found documents
+    const realEstateIDs = realEstates.map((re) => re._id);
+
+    const filteredAuction = await auctionModel
+      .find({
+        realEstateID: { $in: realEstateIDs },
+      })
+      .populate("realEstateID");
 
     res.status(HTTP.OK).json({
       success: true,
       response: filteredAuction,
     });
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json({
       error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
       message: "Filter Auction Fail!",
@@ -466,4 +502,5 @@ module.exports = {
   filterAuction,
   deleteAuctionByStaff,
   handleAuctionRequest,
+  sortAuctionByPopular,
 };

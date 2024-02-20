@@ -4,16 +4,6 @@ const userModel = require("../models/user.model");
 const { generateTokens } = require("../utils/generateAccountToken");
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-  userModel.findById(id).then((user) => {
-    done(null, user);
-  });
-});
-
 passport.use(
   new GoogleStrategy(
     {
@@ -25,6 +15,7 @@ passport.use(
     async (req, accessToken, refreshToken, profile, done) => {
       try {
         // Check if google profile exists.
+
         if (profile) {
           const existingUser = await userModel.findOne({
             email: profile.email,
@@ -55,3 +46,13 @@ passport.use(
     }
   )
 );
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((id, done) => {
+  userModel.findById(id).then((user) => {
+    done(null, user);
+  });
+});

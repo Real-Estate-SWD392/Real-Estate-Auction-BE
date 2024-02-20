@@ -134,21 +134,20 @@ const loginAccount = async (req, res) => {
 
 const logoutAccount = async (req, res) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-
-    const accessToken = req.headers["authorization"];
-
-    if (!refreshToken && !accessToken) {
-      return res
-        .status(HTTP.OK)
-        .json({ success: true, message: "Logged Out Sucessfully" });
-    } else {
-      res.status(HTTP.BAD_REQUEST).json({
-        success: false,
-        message: "Logged Out Failed",
-      });
-    }
+    req.logout(function (err) {
+      if (err) {
+        return res.status(HTTP.BAD_REQUEST).json({
+          success: false,
+          message: "Logged Out Failed",
+        });
+      } else {
+        return res
+          .status(HTTP.OK)
+          .json({ success: true, message: "Logged Out Sucessfully" });
+      }
+    });
   } catch (err) {
+    console.log(err);
     res
       .status(HTTP.INTERNAL_SERVER_ERROR)
       .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);

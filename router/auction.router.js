@@ -14,6 +14,7 @@ const {
   filterAuction,
   deleteAuctionByStaff,
   handleAuctionRequest,
+  sortAuctionByPopular,
 } = require("../controller/auction.controller");
 const authenticateJWT = require("../utils/authenticateJWT");
 const authorization = require("../utils/authorization");
@@ -32,6 +33,7 @@ router.get("/status/:status", getAuctionByStatus);
 router.get("/joinList/:auctionID", getJoinListMemberByAuctionID);
 
 router.get("/sort/time", sortAuctionByTime);
+router.get("/sort/popular", sortAuctionByPopular);
 router.get("/filter", filterAuction);
 
 router.post(

@@ -29,38 +29,38 @@ router.post("/logout", logoutAccount);
 // LOGIN WITH GOOGLE (OAUTH2)
 router.get(
   "/google",
-  (req, res, next) => {
-    next();
-  },
   passport.authenticate("google", { scope: ["email", "profile"] })
 );
 
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    successRedirect: "/auth/google/success",
-    failureRedirect: "/auth/google/failure",
+    successRedirect: "http://localhost:3000/",
+    failureRedirect: "google/failure",
   })
 );
 
 router.get("/google/success", async (req, res) => {
   const user = req.user;
-  const { accessToken, refreshToken } = await generateTokens(user);
 
-  res
-    .cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      sameSite: "strict",
-    })
-    .header("authorization", `Bearer ${accessToken}`)
-    .status(HTTP.OK)
-    .json({
-      succes: true,
-      response: user,
-      accessToken,
-      refreshToken,
-      message: "Logged Google Successfully",
-    });
+  if (user) {
+    const { accessToken, refreshToken } = await generateTokens(user);
+
+    res
+      .cookie("refreshToken", refreshToken, {
+        secure: true,
+        sameSite: "strict",
+      })
+      .header("authorization", `Bearer ${accessToken}`)
+      .status(HTTP.OK)
+      .json({
+        succes: true,
+        response: user,
+        accessToken,
+        refreshToken,
+        message: "Logged Google Successfully",
+      });
+  }
 });
 
 router.get("/google/failure", (req, res) => {

@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const HTTP = require("../HTTP/HttpStatusCode");
 const userModel = require("../models/user.model");
+const { auctionModel } = require("../models/auction.model");
 
 const getMemberByID = async (req, res) => {
   try {
@@ -32,12 +33,20 @@ const getMemberByID = async (req, res) => {
 const editProfileMemberByID = async (req, res) => {
   try {
     const id = req.params.id;
-    const { firstName, lastName, phoneNumber, street, ward, district, city } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      phoneNumber,
+      street,
+      ward,
+      district,
+      city,
+      image,
+    } = req.body;
 
     const updateMember = await userModel.findByIdAndUpdate(
       id,
-      { firstName, lastName, phoneNumber, street, ward, district, city },
+      { firstName, lastName, phoneNumber, street, ward, district, city, image },
       {
         new: true,
       }
@@ -55,6 +64,29 @@ const editProfileMemberByID = async (req, res) => {
       });
     }
   } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
+const getBidListByMember = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    const bidList = await auctionModel({ joinList: _id });
+
+    if (bidList.joinList.length > 0) {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: bidList,
+      });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        message: "You not join any auction!!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -137,4 +169,5 @@ module.exports = {
   editProfileMemberByID,
   addAuctionToFavoriteList,
   ratingOwnerAuction,
+  getBidListByMember,
 };

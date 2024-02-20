@@ -4,19 +4,19 @@ const auctionSchema = mongoose.Schema(
   {
     name: { type: String, required: true },
 
-    startPrice: { type: Number, required: true },
+    startPrice: { type: Number, required: true, default: 0 },
 
     priceStep: { type: Number, min: 0, required: true },
 
     currentPrice: { type: Number },
 
-    day: { type: Number, min: 0 },
+    day: { type: Number, min: 0, default: 0 },
 
-    hour: { type: Number, min: 0, max: 24 },
+    hour: { type: Number, min: 0, max: 24, default: 0 },
 
-    minute: { type: Number, min: 0, max: 60 },
+    minute: { type: Number, min: 0, max: 60, default: 0 },
 
-    second: { type: Number, min: 0, max: 60 },
+    second: { type: Number, min: 0, max: 60, default: 0 },
 
     numberOfBidder: { type: Number, min: 0, default: 0 },
 

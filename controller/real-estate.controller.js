@@ -344,10 +344,12 @@ const uploadImages = async (req, res) => {
 
   uploadMultiple(req, res, async function (err) {
     if (err) {
+      console.log("err: ", err);
       return res.status(HTTP.BAD_REQUEST).json({ error: err });
     }
 
     const files = req.files;
+
     const folder = "img";
     if (files.length < 1)
       return res
