@@ -178,13 +178,15 @@ const createAuction = async (req, res) => {
       name,
       startPrice,
       priceStep,
-      đay,
+      day,
       hour,
       minute,
       second,
       buyNowPrice,
       realEstateID,
     } = req.body;
+
+    console.log(req.body);
 
     const checkValidRealEstateID = await auctionModel.findOne({ realEstateID });
 
@@ -200,7 +202,7 @@ const createAuction = async (req, res) => {
       name,
       startPrice,
       priceStep,
-      đay,
+      day,
       hour,
       minute,
       second,
@@ -330,6 +332,7 @@ const removeMemberFromList = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -340,7 +343,7 @@ const updateAuction = async (req, res) => {
       name,
       startPrice,
       priceStep,
-      đay,
+      day,
       hour,
       minute,
       second,
@@ -355,7 +358,7 @@ const updateAuction = async (req, res) => {
       name,
       startPrice,
       priceStep,
-      đay,
+      day,
       hour,
       minute,
       second,
@@ -464,6 +467,7 @@ const handleAuctionRequest = async (req, res) => {
     const id = req.params.id;
     const { checkedStatus } = req.body;
     var filteredAuction = null;
+    var filteredRealEstate = null;
     var messageAution = "";
     if (checkedStatus === "Accepted") {
       filteredAuction = await auctionModel.findOneAndUpdate(
@@ -473,6 +477,17 @@ const handleAuctionRequest = async (req, res) => {
           new: true,
         }
       );
+      console.log(filteredAuction.realEstateID);
+
+      if (filterAuction) {
+        filteredRealEstate = await realEstateModel.findOneAndUpdate(
+          {
+            _id: filteredAuction.realEstateID,
+          },
+          { status: "In Auction" }
+        );
+      }
+
       messageAution = "Accept successfully!";
     } else if (checkedStatus === "Denied") {
       filteredAuction = await auctionModel.findOneAndUpdate(
@@ -482,6 +497,15 @@ const handleAuctionRequest = async (req, res) => {
           new: true,
         }
       );
+
+      if (filterAuction) {
+        filteredRealEstate = await realEstateModel.findOneAndUpdate(
+          {
+            _id: filteredAuction.realEstateID,
+          },
+          { status: "Available" }
+        );
+      }
       messageAution = "Denied successfully!";
     }
 
