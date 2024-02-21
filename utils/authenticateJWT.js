@@ -6,6 +6,9 @@ const authenticateJWT = (req, res, next) => {
   let accessToken = req.headers["authorization"].split("Bearer ")[1];
   const refreshToken = req.cookies["refreshToken"];
 
+  // console.log(accessToken);
+  // console.log(refreshToken);
+
   if (!accessToken && !refreshToken) {
     return res.status(HTTP.UNAUTHORIZED).json(EXCEPTION.ACCESS_DENIED);
   }
@@ -15,7 +18,6 @@ const authenticateJWT = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.log(error);
     if (!refreshToken) {
       console.log("abc");
       return res

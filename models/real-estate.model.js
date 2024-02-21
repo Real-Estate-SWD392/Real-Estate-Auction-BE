@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 
 const realEstateSchema = new mongoose.Schema(
   {
-    bedRoom: { type: Number, min: 0 },
+    bedRoom: { type: Number, min: 0, default: 0 },
 
-    bathRoom: { type: Number, min: 0 },
+    bathRoom: { type: Number, min: 0, default: 0 },
 
-    size: { type: Number, min: 10 },
+    size: { type: Number, min: 10, default: 0 },
 
     description: { type: String },
 
@@ -34,6 +34,8 @@ const realEstateSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
 
     street: { type: String, minLength: 2 },
+
+    ward: { type: String, minLength: 2 },
 
     district: { type: String, minLength: 2 },
 

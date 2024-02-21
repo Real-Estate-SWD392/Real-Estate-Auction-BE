@@ -12,7 +12,7 @@ const { upload, uploadFiles } = require("../config/firebase");
 
 const getAllRealEstate = async (req, res) => {
   try {
-    const realEstate = await realEstateModel.find({});
+    const realEstate = await realEstateModel.find({ isActive: true });
 
     if (realEstate.length > 0) {
       res.status(HTTP.OK).json({
@@ -36,7 +36,7 @@ const getRealEstateByOwner = async (req, res) => {
   try {
     const ownerID = req.params.ownerID;
 
-    const realEstate = await realEstateModel.find({ ownerID });
+    const realEstate = await realEstateModel.find({ ownerID, isActive: true });
 
     res.status(HTTP.OK).json({
       success: true,
@@ -51,7 +51,7 @@ const getRealEstateByID = async (req, res) => {
   try {
     const _id = req.params.id;
 
-    const realEstate = await realEstateModel.findOne({ _id });
+    const realEstate = await realEstateModel.findOne({ _id, isActive: true });
 
     if (realEstate) {
       res.status(HTTP.OK).json({
@@ -64,6 +64,7 @@ const getRealEstateByID = async (req, res) => {
         .json({ success: false, error: EXCEPTIONS.FAIL_TO_GET_ITEM });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -72,7 +73,7 @@ const getRealEstateByStatus = async (req, res) => {
   try {
     const status = req.params.status;
 
-    const realEstate = await realEstateModel.find({ status });
+    const realEstate = await realEstateModel.find({ status, isActive: true });
 
     if (realEstate.length > 0) {
       res.status(HTTP.OK).json({
@@ -93,7 +94,7 @@ const getRealEstateByType = async (req, res) => {
   try {
     const type = req.params.type;
 
-    const realEstate = await realEstateModel.find({ type });
+    const realEstate = await realEstateModel.find({ type, isActive: true });
 
     if (realEstate.length > 0) {
       res.status(HTTP.OK).json({
@@ -123,6 +124,7 @@ const createNewRealEstate = async (req, res) => {
       type,
       street,
       district,
+      ward,
       city,
     } = req.body;
 
@@ -136,6 +138,7 @@ const createNewRealEstate = async (req, res) => {
       ownerID,
       type,
       street,
+      ward,
       district,
       city,
     });

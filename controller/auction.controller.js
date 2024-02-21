@@ -6,7 +6,9 @@ const { realEstateModel } = require("../models/real-estate.model");
 
 const getAllAuction = async (req, res) => {
   try {
-    const auctions = await auctionModel.find({}).populate("realEstateID");
+    const auctions = await auctionModel
+      .find({ status: "In Auction" })
+      .populate("realEstateID");
     if (auctions.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
@@ -52,8 +54,9 @@ const getAuctionByStatus = async (req, res) => {
   try {
     const status = req.params.status;
 
-    const auction = await auctionModel.find({ status: status });
-
+    const auction = await auctionModel
+      .find({ status: status })
+      .populate("realEstateID");
     if (auction.length > 0) {
       res.status(HTTP.OK).json({
         success: true,
@@ -79,6 +82,7 @@ const getAuctionByName = async (req, res) => {
     const auction = await auctionModel
       .find({
         name: { $regex: regex },
+        status: "in Auction",
       })
       .populate("realEstateID");
 
@@ -94,7 +98,7 @@ const getAuctionByName = async (req, res) => {
 const sortAuctionByTime = async (req, res) => {
   try {
     const sortedAuctions = await auctionModel
-      .find({})
+      .find({ status: "in Auction" })
       .sort({ createdAt: -1 })
       .populate("realEstateID");
     return res.status(HTTP.OK).json({
@@ -112,7 +116,7 @@ const sortAuctionByTime = async (req, res) => {
 const sortAuctionByPopular = async (req, res) => {
   try {
     const sortedAuctions = await auctionModel
-      .find({})
+      .find({ status: "in Auction" })
       .sort({ numberOfBidder: -1 })
       .populate("realEstateID");
     return res.status(HTTP.OK).json({
@@ -151,6 +155,7 @@ const filterAuction = async (req, res) => {
     const filteredAuction = await auctionModel
       .find({
         realEstateID: { $in: realEstateIDs },
+        status: "in Auction",
       })
       .populate("realEstateID");
 
@@ -177,12 +182,13 @@ const createAuction = async (req, res) => {
       hour,
       minute,
       second,
-      status,
       buyNowPrice,
       realEstateID,
     } = req.body;
 
     const checkValidRealEstateID = await auctionModel.findOne({ realEstateID });
+
+    console.log(checkValidRealEstateID);
 
     if (checkValidRealEstateID)
       return res.status(HTTP.BAD_REQUEST).json({
@@ -198,14 +204,18 @@ const createAuction = async (req, res) => {
       hour,
       minute,
       second,
-      status,
       buyNowPrice,
       realEstateID,
     });
 
     const checkAuction = await newAuction.save();
 
-    if (checkAuction) {
+    const updateRealState = await realEstateModel.findOneAndUpdate(
+      { _id: realEstateID },
+      { status: "Pending" }
+    );
+
+    if (checkAuction && updateRealState) {
       res.status(HTTP.INSERT_OK).json({
         success: true,
         result: checkAuction,
@@ -217,6 +227,7 @@ const createAuction = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };

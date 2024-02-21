@@ -24,7 +24,8 @@ router.post("/login", loginValidator, loginAccount);
 router.post("/register", registerValidator, registerAccount);
 router.post("/forgotPassword", forgotPassword);
 router.post("/resetPassword", resetPassword);
-router.post("/logout", logoutAccount);
+
+router.get("/logout", logoutAccount);
 
 // LOGIN WITH GOOGLE (OAUTH2)
 router.get(

@@ -95,13 +95,23 @@ const addAuctionToFavoriteList = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const { auction } = req.body;
+    const { _id } = req.body;
+
+    const checkAuctionExist = await userModel.find({
+      favoriteList: { $in: _id },
+    });
+
+    if (checkAuctionExist.length > 0) {
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ message: "This auction is already on favourite list" });
+    }
 
     const addFavoriteAuction = await userModel.findOneAndUpdate(
       { _id: id },
       {
         $push: {
-          favoriteList: mongoose.Types.ObjectId.createFromHexString(auction),
+          favoriteList: _id,
         },
       },
       { new: true }

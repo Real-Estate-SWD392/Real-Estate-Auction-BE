@@ -85,7 +85,7 @@ const loginAccount = async (req, res) => {
 
     const { email, password } = req.body;
 
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email }).populate("favoriteList");
 
     if (!user)
       return res.status(HTTP.UNAUTHORIZED).json({
@@ -107,7 +107,7 @@ const loginAccount = async (req, res) => {
         error: "Your account is not verifed",
       });
 
-    const member = await userModel.findOne({ email });
+    // const member = await userModel.findOne({ email });
 
     const { accessToken, refreshToken } = await generateTokens(user);
 
@@ -141,9 +141,12 @@ const logoutAccount = async (req, res) => {
           message: "Logged Out Failed",
         });
       } else {
-        return res
-          .status(HTTP.OK)
+        res
+          .status(200)
+          .clearCookie("connect.sid")
           .json({ success: true, message: "Logged Out Sucessfully" });
+
+        res.status(HTTP.OK);
       }
     });
   } catch (err) {
