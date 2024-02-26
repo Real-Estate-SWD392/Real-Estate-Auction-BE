@@ -29,7 +29,7 @@ const realEstateSchema = new mongoose.Schema(
 
     image: [{ type: String }],
 
-    ownerID: { type: mongoose.Types.ObjectId, required: true },
+    ownerID: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 
     isActive: { type: Boolean, default: true },
 

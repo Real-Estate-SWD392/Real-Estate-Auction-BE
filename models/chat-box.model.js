@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const chatBoxSchema = new mongoose.Schema(
   {
-    members: Array,
+    members: [{ type: mongoose.Types.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,

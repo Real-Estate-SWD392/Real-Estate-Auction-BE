@@ -8,8 +8,10 @@ const createChatBox = async (req, res) => {
     const { firstID, secondID } = req.body;
 
     const chat = await chatBoxModel.findOne({
-      members: { $all: { firstID, secondID } },
+      members: { $all: [firstID, secondID] },
     });
+
+    console.log(chat);
 
     if (chat)
       return res
@@ -30,7 +32,10 @@ const createChatBox = async (req, res) => {
         .json({ success: false, error: "Fail to create box chat" });
     }
   } catch (error) {
-    res.status(HTTP.BAD_REQUEST).json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+    console.log(error);
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -59,9 +64,11 @@ const findChatBox = async (req, res) => {
   try {
     const { firstID, secondID } = req.params;
 
-    const chatbox = await chatBoxModel.find({
-      members: { $all: [firstID, secondID] },
-    });
+    const chatbox = await chatBoxModel
+      .find({
+        members: { $all: [firstID, secondID] },
+      })
+      .populate("members");
 
     if (chatbox) {
       res.status(HTTP.OK).json(chatbox);

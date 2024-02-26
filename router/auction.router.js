@@ -15,6 +15,9 @@ const {
   deleteAuctionByStaff,
   handleAuctionRequest,
   sortAuctionByPopular,
+  getAuctionByRealEstate,
+  closeAuction,
+  setWinner,
 } = require("../controller/auction.controller");
 const authenticateJWT = require("../utils/authenticateJWT");
 const authorization = require("../utils/authorization");
@@ -23,6 +26,8 @@ const { STAFF_ROLE, MEMBER_ROLE } = require("../constant/role");
 const router = express.Router();
 
 router.get("/", getAllAuction);
+
+router.get("/realEstate/:id", getAuctionByRealEstate);
 
 router.get("/name/:name", getAuctionByName);
 
@@ -49,10 +54,13 @@ router.put(
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   updateAuction
 );
+
+router.put("/setWinner/:id", setWinner);
+
 router.put(
   "/addMember/:auctionID/:accountID",
   authenticateJWT,
-  authorization([MEMBER_ROLE]),
+  authorization([MEMBER_ROLE, STAFF_ROLE]),
   addMemberToList
 );
 router.put(
@@ -80,6 +88,13 @@ router.put(
   authenticateJWT,
   authorization([STAFF_ROLE]),
   handleAuctionRequest
+);
+
+router.put(
+  "/closeAuction/:id",
+  authenticateJWT,
+  authorization([STAFF_ROLE]),
+  closeAuction
 );
 
 module.exports = router;

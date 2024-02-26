@@ -5,6 +5,24 @@ const EXCEPTIONS = require("../exceptions/Exceptions");
 const { memberModel } = require("../models/member.model");
 const userModel = require("../models/user.model");
 
+const getAllAccount = async (req, res) => {
+  try {
+    const accounts = await userModel.find({
+      role: { $in: ["member", "staff"] },
+    });
+
+    res.status(HTTP.OK).json({
+      success: true,
+      response: accounts,
+    });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
 const getAccountByRole = async (req, res) => {
   try {
     const role = req.params.role;
@@ -83,22 +101,11 @@ const deleteAccount = async (req, res) => {
 
     const checkDeleteAccount = await userModel.findOneAndUpdate(
       { _id },
-      { isActive: false },
+      { status: "Inactive" },
       { new: true }
     );
 
-    const checkDeleteToken = await accountTokenModel.findOneAndUpdate(
-      {
-        accountID: _id,
-      },
-      { isActive: false },
-      { new: true }
-    );
-
-    if (
-      checkDeleteAccount.isActive === false &&
-      checkDeleteToken.isActive === false
-    ) {
+    if (checkDeleteAccount.status === "Inactive") {
       res.status(HTTP.OK).json({
         success: true,
         response: checkDeleteAccount,
@@ -107,7 +114,36 @@ const deleteAccount = async (req, res) => {
     } else {
       res.status(HTTP.BAD_REQUEST).json({
         success: false,
-        error: EXCEPTIONS.FAIL_TO_DELETE_ITEM,
+        message: "Remove Account Failed!!",
+      });
+    }
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const banAccount = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    const checkDeleteAccount = await userModel.findOneAndUpdate(
+      { _id },
+      { status: "Banned" },
+      { new: true }
+    );
+
+    if (checkDeleteAccount.status === "Banned") {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: checkDeleteAccount,
+        message: "Ban Account Succesfully!!",
+      });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        message: "Ban Account Failed!!",
       });
     }
   } catch (error) {
@@ -118,7 +154,9 @@ const deleteAccount = async (req, res) => {
 };
 
 module.exports = {
+  getAllAccount,
   getAccountByRole,
   changeAccountPassword,
   deleteAccount,
+  banAccount,
 };

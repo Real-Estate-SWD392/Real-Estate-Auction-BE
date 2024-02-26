@@ -30,7 +30,9 @@ const getMessages = async (req, res) => {
   try {
     const { chatBoxID } = req.params;
 
-    const messages = await messageModel.find({ chatBoxID });
+    const messages = await messageModel
+      .find({ chatBoxID })
+      .populate("senderID");
     if (messages) {
       res.status(HTTP.OK).json({ success: true, response: messages });
     } else {

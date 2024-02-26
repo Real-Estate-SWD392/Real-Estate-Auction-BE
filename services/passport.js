@@ -17,9 +17,11 @@ passport.use(
         // Check if google profile exists.
 
         if (profile) {
-          const existingUser = await userModel.findOne({
-            email: profile.email,
-          });
+          const existingUser = await userModel
+            .findOne({
+              email: profile.email,
+            })
+            .populate("favoriteList");
 
           if (existingUser) {
             done(null, existingUser);
@@ -52,7 +54,10 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-  userModel.findById(id).then((user) => {
-    done(null, user);
-  });
+  userModel
+    .findById(id)
+    .populate("favoriteList")
+    .then((user) => {
+      done(null, user);
+    });
 });

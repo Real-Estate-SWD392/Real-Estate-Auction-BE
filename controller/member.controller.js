@@ -25,7 +25,7 @@ const getMemberByID = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    console.log("error", error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -98,6 +98,7 @@ const addAuctionToFavoriteList = async (req, res) => {
     const { _id } = req.body;
 
     const checkAuctionExist = await userModel.find({
+      _id: id,
       favoriteList: { $in: _id },
     });
 
@@ -107,15 +108,17 @@ const addAuctionToFavoriteList = async (req, res) => {
         .json({ message: "This auction is already on favourite list" });
     }
 
-    const addFavoriteAuction = await userModel.findOneAndUpdate(
-      { _id: id },
-      {
-        $push: {
-          favoriteList: _id,
+    const addFavoriteAuction = await userModel
+      .findOneAndUpdate(
+        { _id: id },
+        {
+          $push: {
+            favoriteList: _id,
+          },
         },
-      },
-      { new: true }
-    );
+        { new: true } // Add select option to specify the field to populate
+      )
+      .populate("favoriteList");
 
     if (addFavoriteAuction) {
       res.status(HTTP.OK).json({
@@ -130,6 +133,52 @@ const addAuctionToFavoriteList = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
+const removeAuctionFromFavoriteList = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const { _id } = req.body;
+
+    const checkAuctionExist = await userModel.find({
+      favoriteList: { $in: _id },
+    });
+
+    if (checkAuctionExist.length <= 0) {
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ message: "This auction is not on favourite list" });
+    }
+
+    const removeFavoriteAuction = await userModel
+      .findOneAndUpdate(
+        { _id: id },
+        {
+          $pull: {
+            favoriteList: _id,
+          },
+        },
+        { new: true } // Add select option to specify the field to populate
+      )
+      .populate("favoriteList");
+
+    if (removeFavoriteAuction) {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: removeFavoriteAuction,
+        message: "Remove Auction From Favorite List Successfully!",
+      });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        error: EXCEPTIONS.FAIL_TO_REMOVE_FAVORITE,
+      });
+    }
+  } catch (error) {
+    console.log("error:", error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -180,4 +229,5 @@ module.exports = {
   addAuctionToFavoriteList,
   ratingOwnerAuction,
   getBidListByMember,
+  removeAuctionFromFavoriteList,
 };

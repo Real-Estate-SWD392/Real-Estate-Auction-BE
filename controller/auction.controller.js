@@ -2,14 +2,42 @@ const { default: mongoose } = require("mongoose");
 const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const { auctionModel, auctionEnums } = require("../models/auction.model");
-const { realEstateModel } = require("../models/real-estate.model");
+const {
+  realEstateModel,
+  realEstateEnums,
+} = require("../models/real-estate.model");
 
 const getAllAuction = async (req, res) => {
   try {
     const auctions = await auctionModel
-      .find({ status: "In Auction" })
+      .find({})
+      .sort({ createdAt: -1 })
       .populate("realEstateID");
     if (auctions.length > 0) {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: auctions,
+      });
+    } else {
+      res.status(HTTP.NOT_FOUND).json({
+        success: false,
+        error: EXCEPTIONS.FAIL_TO_GET_ITEM,
+      });
+    }
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+    console.log("er: ", error);
+  }
+};
+
+const getAuctionByRealEstate = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const auctions = await auctionModel
+      .findOne({ realEstateID: id })
+      .populate("realEstateID");
+    if (auctions) {
       res.status(HTTP.OK).json({
         success: true,
         response: auctions,
@@ -30,9 +58,14 @@ const getAuctionByID = async (req, res) => {
   try {
     const _id = req.params.id;
 
-    const auction = await auctionModel
-      .findOne({ _id })
-      .populate("realEstateID");
+    const auction = await auctionModel.findOne({ _id }).populate({
+      path: "realEstateID",
+      populate: [
+        {
+          path: "ownerID",
+        },
+      ],
+    });
 
     if (auction) {
       res.status(HTTP.OK).json({
@@ -82,7 +115,7 @@ const getAuctionByName = async (req, res) => {
     const auction = await auctionModel
       .find({
         name: { $regex: regex },
-        status: "in Auction",
+        status: "In Auction",
       })
       .populate("realEstateID");
 
@@ -95,10 +128,32 @@ const getAuctionByName = async (req, res) => {
   }
 };
 
+const setWinner = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    const { userID } = req.body;
+
+    const winner = await auctionModel
+      .findOneAndUpdate({ _id }, { winner: userID })
+      .populate("realEstateID");
+
+    return res.status(HTTP.OK).json({
+      success: true,
+      response: winner,
+    });
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      message: "Set Winner Failed",
+      error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
 const sortAuctionByTime = async (req, res) => {
   try {
     const sortedAuctions = await auctionModel
-      .find({ status: "in Auction" })
+      .find({ status: "In Auction" })
       .sort({ createdAt: -1 })
       .populate("realEstateID");
     return res.status(HTTP.OK).json({
@@ -116,7 +171,7 @@ const sortAuctionByTime = async (req, res) => {
 const sortAuctionByPopular = async (req, res) => {
   try {
     const sortedAuctions = await auctionModel
-      .find({ status: "in Auction" })
+      .find({ status: "In Auction" })
       .sort({ numberOfBidder: -1 })
       .populate("realEstateID");
     return res.status(HTTP.OK).json({
@@ -155,7 +210,7 @@ const filterAuction = async (req, res) => {
     const filteredAuction = await auctionModel
       .find({
         realEstateID: { $in: realEstateIDs },
-        status: "in Auction",
+        status: "In Auction",
       })
       .populate("realEstateID");
 
@@ -201,6 +256,7 @@ const createAuction = async (req, res) => {
     const newAuction = new auctionModel({
       name,
       startPrice,
+      currentPrice: startPrice,
       priceStep,
       day,
       hour,
@@ -276,12 +332,15 @@ const addMemberToList = async (req, res) => {
         .status(HTTP.NOT_FOUND)
         .json({ message: "Member already in list" });
 
-    const checkUpdate = await auctionModel.updateOne(
-      { _id: auctionID },
-      { $addToSet: { joinList: accountID } }
-    );
+    const checkUpdate = await auctionModel
+      .findOneAndUpdate(
+        { _id: auctionID },
+        { $addToSet: { joinList: accountID } },
+        { new: true }
+      )
+      .populate("realEstateID");
 
-    if (!checkUpdate.modifiedCount > 0) {
+    if (!checkUpdate) {
       res.status(HTTP.BAD_REQUEST).json({
         success: false,
         error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
@@ -462,6 +521,42 @@ const deleteAuctionByStaff = async (req, res) => {
   }
 };
 
+const closeAuction = async (req, res) => {
+  try {
+    const auctionId = req.params.id;
+
+    const checkClose = await auctionModel
+      .findOneAndUpdate(
+        {
+          _id: auctionId,
+        },
+        { status: "End" },
+        {
+          new: true,
+        }
+      )
+      .populate("realEstateID");
+
+    if (checkClose.status === "End") {
+      res.status(HTTP.OK).json({
+        success: true,
+        message: "Close auction successfully!",
+        response: checkClose,
+      });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        message: "Close Auction Fail!",
+      });
+    }
+  } catch (error) {
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
+      message: "Close Auction Fail!",
+    });
+  }
+};
+
 const handleAuctionRequest = async (req, res) => {
   try {
     const id = req.params.id;
@@ -470,13 +565,15 @@ const handleAuctionRequest = async (req, res) => {
     var filteredRealEstate = null;
     var messageAution = "";
     if (checkedStatus === "Accepted") {
-      filteredAuction = await auctionModel.findOneAndUpdate(
-        { _id: id },
-        { checkedStatus, status: "Not Start" },
-        {
-          new: true,
-        }
-      );
+      filteredAuction = await auctionModel
+        .findOneAndUpdate(
+          { _id: id },
+          { checkedStatus, status: "In Auction" },
+          {
+            new: true,
+          }
+        )
+        .populate("realEstateID");
       console.log(filteredAuction.realEstateID);
 
       if (filterAuction) {
@@ -490,13 +587,15 @@ const handleAuctionRequest = async (req, res) => {
 
       messageAution = "Accept successfully!";
     } else if (checkedStatus === "Denied") {
-      filteredAuction = await auctionModel.findOneAndUpdate(
-        { _id: id },
-        { checkedStatus, status: "Cancel" },
-        {
-          new: true,
-        }
-      );
+      filteredAuction = await auctionModel
+        .findOneAndUpdate(
+          { _id: id },
+          { checkedStatus, status: "Cancel" },
+          {
+            new: true,
+          }
+        )
+        .populate("realEstateID");
 
       if (filterAuction) {
         filteredRealEstate = await realEstateModel.findOneAndUpdate(
@@ -538,4 +637,7 @@ module.exports = {
   deleteAuctionByStaff,
   handleAuctionRequest,
   sortAuctionByPopular,
+  getAuctionByRealEstate,
+  closeAuction,
+  setWinner,
 };

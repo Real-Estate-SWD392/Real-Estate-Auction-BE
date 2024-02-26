@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
-    chatBoxID: String,
-    senderID: String,
+    chatBoxID: { type: String, ref: "ChatBox" },
+    senderID: { type: String, ref: "User" },
     text: String,
   },
   {

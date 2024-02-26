@@ -8,7 +8,7 @@ const auctionSchema = mongoose.Schema(
 
     priceStep: { type: Number, min: 0, required: true },
 
-    currentPrice: { type: Number },
+    currentPrice: { type: Number, default: 0 },
 
     day: { type: Number, min: 0, default: 0 },
 
@@ -19,6 +19,8 @@ const auctionSchema = mongoose.Schema(
     second: { type: Number, min: 0, max: 60, default: 0 },
 
     numberOfBidder: { type: Number, min: 0, default: 0 },
+
+    winner: { type: String, ref: "User", default: "" },
 
     status: {
       type: String,

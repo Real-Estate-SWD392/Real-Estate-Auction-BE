@@ -23,6 +23,7 @@ const addressRouter = require("./router/address.router");
 const chatBoxRouter = require("./router/chat-box.router");
 const messageRouter = require("./router/message.router");
 const bidRouter = require("./router/bid.router");
+const billRouter = require("./router/bill.router");
 
 const passport = require("passport");
 require("./services/passport");
@@ -124,11 +125,19 @@ app.use(
   messageRouter
 );
 app.use("/account", authenticateJWT, accountRouter);
+
 app.use(
   "/bid",
   authenticateJWT,
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   bidRouter
+);
+
+app.use(
+  "/bill",
+  authenticateJWT,
+  authorization([STAFF_ROLE, MEMBER_ROLE]),
+  billRouter
 );
 
 // CONNECT TO PORT

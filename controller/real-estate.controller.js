@@ -158,6 +158,7 @@ const createNewRealEstate = async (req, res) => {
         });
     }
   } catch (error) {
+    console.log(error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -178,6 +179,7 @@ const updateRealEstate = async (req, res) => {
       street,
       district,
       city,
+      ward,
     } = req.body;
 
     const isStatusValid = realEstateEnums.status.find(
@@ -199,6 +201,7 @@ const updateRealEstate = async (req, res) => {
       street,
       district,
       city,
+      ward,
     };
 
     const oldValues = await realEstateModel.findOne(
@@ -233,14 +236,15 @@ const updateRealEstate = async (req, res) => {
     }
 
     if (valuesChanged) {
-      const checkRealEstateUpdate = await realEstateModel.updateOne(
+      const checkRealEstateUpdate = await realEstateModel.findOneAndUpdate(
         { _id },
         newValues
       );
 
-      if (checkRealEstateUpdate.modifiedCount > 0) {
+      if (checkRealEstateUpdate) {
         res.status(HTTP.OK).json({
           success: true,
+          response: checkRealEstateUpdate,
           message: "Update Real Estate Complete",
         });
       } else {

@@ -101,7 +101,7 @@ const loginAccount = async (req, res) => {
         error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
       });
 
-    if (!user.isVerified)
+    if (user.status !== "Active")
       return res.status(HTTP.UNAUTHORIZED).json({
         success: false,
         error: "Your account is not verifed",

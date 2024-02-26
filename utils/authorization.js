@@ -6,7 +6,7 @@ const authorization = (roles = []) => {
     // Check if user role is allowed to access the route
     if (!req.user || !roles.includes(req.user.role)) {
       return (
-        console.log("moon: ", req?.user),
+        console.log("moon: ", req?.user.role),
         res.status(HTTP.FORBIDDEN).json({ message: "Unauthorized" })
       );
     }

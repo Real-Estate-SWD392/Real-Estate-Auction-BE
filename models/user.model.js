@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
 
     favoriteList: [{ type: mongoose.Types.ObjectId, ref: "Auction" }], // Reference to Auction collection
 
-    isVerified: { type: Boolean, default: false },
+    // isVerified: { type: Boolean, default: false },
 
     verifyToken: { type: String },
 
@@ -59,6 +59,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "member",
       enum: { values: ["admin", "staff", "member"] },
+    },
+
+    status: {
+      type: String,
+      default: "Pending",
+      enum: { values: ["Active", "Pending", "Banned", "Inactive"] },
     },
 
     isActive: { type: Boolean, default: true },
