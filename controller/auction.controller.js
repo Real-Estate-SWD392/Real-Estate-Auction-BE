@@ -6,6 +6,8 @@ const {
   realEstateModel,
   realEstateEnums,
 } = require("../models/real-estate.model");
+const { updateRealEstate } = require("./real-estate.controller");
+const { sendNotificationMail } = require("../services/email");
 
 const getAllAuction = async (req, res) => {
   try {
@@ -135,7 +137,10 @@ const setWinner = async (req, res) => {
     const { userID } = req.body;
 
     const winner = await auctionModel
-      .findOneAndUpdate({ _id }, { winner: userID })
+      .findOneAndUpdate(
+        { _id },
+        { winner: userID, day: 0, hour: 0, minute: 0, second: 0, status: "End" }
+      )
       .populate("realEstateID");
 
     return res.status(HTTP.OK).json({
@@ -396,10 +401,41 @@ const removeMemberFromList = async (req, res) => {
   }
 };
 
+const startAuction = async (req, res) => {
+  try {
+    // const auctionToStart = await auctionModel.find({ status: "Not Start" });
+
+    console.log(req.body);
+
+    const auctionToStart = req.body.auctionList;
+
+    await Promise.all(
+      auctionToStart.map(async (auction) => {
+        const checkUpdate = await auctionModel.findOneAndUpdate(
+          { _id: auction._id },
+          { status: "In Auction" },
+          { new: true }
+        );
+
+        const updateRealState = await realEstateModel.findOneAndUpdate(
+          {
+            _id: checkUpdate.realEstateID,
+          },
+          { status: "In Auction" }
+        );
+      })
+    );
+
+    res.status(HTTP.OK).json({ success: true, response: auctionToStart });
+  } catch (error) {
+    console.log(error);
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
 const updateAuction = async (req, res) => {
   try {
     const {
-      name,
       startPrice,
       priceStep,
       day,
@@ -411,10 +447,11 @@ const updateAuction = async (req, res) => {
       realEstateID,
     } = req.body;
 
+    console.log(startPrice);
+
     const _id = req.params.id;
 
     const newValues = {
-      name,
       startPrice,
       priceStep,
       day,
@@ -448,9 +485,13 @@ const updateAuction = async (req, res) => {
     });
 
     if (valuesChanged) {
-      const checkUpdate = await auctionModel.updateOne({ _id }, newValues);
+      const checkUpdate = await auctionModel.findOneAndUpdate(
+        { _id },
+        newValues,
+        { new: true }
+      );
 
-      if (!checkUpdate.modifiedCount > 0) {
+      if (checkUpdate) {
         res.status(HTTP.BAD_REQUEST).json({
           success: false,
           error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
@@ -469,6 +510,7 @@ const updateAuction = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res
       .status(HTTP.INTERNAL_SERVER_ERROR)
       .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
@@ -561,6 +603,13 @@ const handleAuctionRequest = async (req, res) => {
   try {
     const id = req.params.id;
     const { checkedStatus } = req.body;
+
+    const startDate = new Date(req.body.startDate);
+
+    startDate.setDate(startDate.getDate() + 1);
+
+    console.log(startDate);
+
     var filteredAuction = null;
     var filteredRealEstate = null;
     var messageAution = "";
@@ -568,22 +617,37 @@ const handleAuctionRequest = async (req, res) => {
       filteredAuction = await auctionModel
         .findOneAndUpdate(
           { _id: id },
-          { checkedStatus, status: "In Auction" },
+          { checkedStatus, status: "Not Start", startDate: startDate },
           {
             new: true,
           }
         )
-        .populate("realEstateID");
-      console.log(filteredAuction.realEstateID);
+        .populate({
+          path: "realEstateID",
+          populate: [
+            {
+              path: "ownerID",
+            },
+          ],
+        });
 
-      if (filterAuction) {
-        filteredRealEstate = await realEstateModel.findOneAndUpdate(
-          {
-            _id: filteredAuction.realEstateID,
-          },
-          { status: "In Auction" }
-        );
+      // if (filterAuction) {
+      //   filteredRealEstate = await realEstateModel.findOneAndUpdate(
+      //     {
+      //       _id: filteredAuction.realEstateID,
+      //     },
+      //     { status: "In Auction" }
+      //   );
+      // }
+
+      if (!filteredAuction.startDate) {
+        return res.status(HTTP.BAD_REQUEST).json({ success: false });
       }
+
+      await sendNotificationMail(
+        filteredAuction.realEstateID.ownerID,
+        startDate
+      );
 
       messageAution = "Accept successfully!";
     } else if (checkedStatus === "Denied") {
@@ -614,6 +678,8 @@ const handleAuctionRequest = async (req, res) => {
       message: messageAution,
     });
   } catch (error) {
+    console.log(error);
+
     res.status(HTTP.INTERNAL_SERVER_ERROR).json({
       error: EXCEPTIONS.INTERNAL_SERVER_ERROR,
       message: "Filter Auction Fail!",
@@ -640,4 +706,5 @@ module.exports = {
   getAuctionByRealEstate,
   closeAuction,
   setWinner,
+  startAuction,
 };

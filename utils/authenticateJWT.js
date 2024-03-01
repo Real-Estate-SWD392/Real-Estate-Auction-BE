@@ -3,7 +3,7 @@ const HTTP = require("../HTTP/HttpStatusCode");
 const EXCEPTION = require("../exceptions/Exceptions");
 
 const authenticateJWT = (req, res, next) => {
-  let accessToken = req.headers["authorization"].split("Bearer ")[1];
+  let accessToken = req.headers["authorization"]?.split("Bearer ")[1];
   const refreshToken = req.cookies["refreshToken"];
 
   // console.log(accessToken);
@@ -22,7 +22,7 @@ const authenticateJWT = (req, res, next) => {
       console.log("abc");
       return res
         .status(HTTP.UNAUTHORIZED)
-        .json({ message: "Refresh Token is null" });
+        .json({ message: "Refresh Token is invalid" });
     }
 
     try {

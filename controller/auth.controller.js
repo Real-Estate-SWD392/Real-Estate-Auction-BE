@@ -87,6 +87,8 @@ const loginAccount = async (req, res) => {
 
     const user = await userModel.findOne({ email }).populate("favoriteList");
 
+    console.log(user);
+
     if (!user)
       return res.status(HTTP.UNAUTHORIZED).json({
         success: false,
@@ -101,10 +103,10 @@ const loginAccount = async (req, res) => {
         error: EXCEPTIONS.WRONG_EMAIL_PASSWORD,
       });
 
-    if (user.status !== "Active")
+    if (user.status === "Inative")
       return res.status(HTTP.UNAUTHORIZED).json({
         success: false,
-        error: "Your account is not verifed",
+        error: "Your account is not active",
       });
 
     // const member = await userModel.findOne({ email });

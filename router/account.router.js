@@ -21,7 +21,7 @@ router.get("/role/:role", authorization([ADMIN_ROLE]), getAccountByRole);
 
 router.put(
   "/changePassword/:id",
-  authorization([MEMBER_ROLE, ADMIN_ROLE]),
+  authorization([MEMBER_ROLE, STAFF_ROLE, ADMIN_ROLE]),
   changeAccountPassword
 );
 

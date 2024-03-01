@@ -18,6 +18,7 @@ const {
   getAuctionByRealEstate,
   closeAuction,
   setWinner,
+  startAuction,
 } = require("../controller/auction.controller");
 const authenticateJWT = require("../utils/authenticateJWT");
 const authorization = require("../utils/authorization");
@@ -49,13 +50,15 @@ router.post(
 );
 
 router.put(
-  "/:id",
+  "/update/:id",
   authenticateJWT,
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   updateAuction
 );
 
-router.put("/setWinner/:id", setWinner);
+router.put("/startAuction", startAuction);
+
+router.put("/setWinner", setWinner);
 
 router.put(
   "/addMember/:auctionID/:accountID",

@@ -22,6 +22,8 @@ const auctionSchema = mongoose.Schema(
 
     winner: { type: String, ref: "User", default: "" },
 
+    startDate: { type: Date },
+
     status: {
       type: String,
       default: "Wait For Approval",

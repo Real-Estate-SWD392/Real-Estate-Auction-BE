@@ -18,6 +18,15 @@ const billSchema = new mongoose.Schema(
       },
       default: "Pending", // Trạng thái mặc định là "Chờ xử lý"
     },
+
+    type: {
+      type: String,
+      enum: {
+        values: ["Pay Auction Fee", "Place Bid", "Buy Now"],
+      },
+      default: "Pending", // Trạng thái mặc định là "Chờ xử lý",
+      required: true,
+    },
   },
   { timestamps: true }
 );

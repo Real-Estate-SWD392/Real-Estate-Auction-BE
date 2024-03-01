@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const moment = require("moment");
 
 const transporter = nodemailer.createTransport({
   host: process.env.HOST,
@@ -18,6 +19,31 @@ const sendVerifyEmail = async (user) => {
       subject: "Test Send Mail",
       html: `<p>Please verify your account by clicking this link:</p> 
       <a href="${process.env.BASE_URL}/auth/verify-email?verifyToken=${user.verifyToken}&userID=${user._id}">VERIFY YOUR ACCOUNT</a>`,
+    };
+
+    // CREATE EMAIL TRANSPORTER
+
+    await transporter.sendMail(mailOption, (err, infor) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("SEND SUCCESFULLY");
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const sendNotificationMail = async (user, startDate) => {
+  try {
+    const mailOption = {
+      from: `Email from <Pinterest Real Estate Auction>`,
+      to: user.email,
+      subject: "Your Auction Is Approve",
+      html: `<p>Your Auction will start at: ${moment(startDate)
+        .subtract(1, "days")
+        .format("DD-MM-YYYY")}</p> `,
     };
 
     // CREATE EMAIL TRANSPORTER
@@ -60,4 +86,8 @@ const sendForgotPasswordMail = async (user) => {
   }
 };
 
-module.exports = { sendVerifyEmail, sendForgotPasswordMail };
+module.exports = {
+  sendVerifyEmail,
+  sendForgotPasswordMail,
+  sendNotificationMail,
+};

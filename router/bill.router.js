@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.post("/:memberID", createBill);
 
-router.get("/getBill/:memberID", getBill);
+router.post("/getBill/:id", getBill);
 
 module.exports = router;
