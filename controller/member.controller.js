@@ -93,22 +93,23 @@ const getBidListByMember = async (req, res) => {
 
 const addAuctionToFavoriteList = async (req, res) => {
   try {
-    const id = req.params.id;
+    const userId = req.params.id;
 
     const { _id } = req.body;
 
-    const checkAuctionExist = await userModel.find({
-      favoriteList: { $in: _id },
+    const checkAuctionExist = await userModel.findOne({
+      _id: userId,
+      favoriteList: { $in: [_id] },
     });
 
-    if (checkAuctionExist.length > 0) {
+    if (checkAuctionExist) {
       return res
         .status(HTTP.BAD_REQUEST)
         .json({ message: "This auction is already on favourite list" });
     }
 
     const addFavoriteAuction = await userModel.findOneAndUpdate(
-      { _id: id },
+      { _id: userId },
       {
         $push: {
           favoriteList: _id,
@@ -130,6 +131,48 @@ const addAuctionToFavoriteList = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
+const removeAuctionFromFavorite = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const auctionId = req.body._id; // Sửa lại để lấy _id từ req.body
+    const checkAuctionExist = await userModel.findOne({
+      _id: userId,
+      favoriteList: { $in: [auctionId] }, // Sử dụng mảng để kiểm tra auctionId tồn tại trong favoriteList
+    });
+
+    if (checkAuctionExist) {
+      const removeFavoriteAuction = await userModel.findOneAndUpdate(
+        { _id: userId },
+        {
+          $pull: {
+            favoriteList: auctionId,
+          },
+        },
+        { new: true }
+      );
+
+      if (removeFavoriteAuction) {
+        res.status(HTTP.OK).json({
+          success: true,
+          message: "Unfavorite successfully!!",
+        });
+      } else {
+        res.status(HTTP.BAD_REQUEST).json({
+          success: false,
+          message: "Unfavorite fail!!",
+        });
+      }
+    } else {
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ message: "This auction is not exist on favorite list" });
+    }
+  } catch (error) {
+    console.log("bug", error);
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
 };
@@ -180,4 +223,5 @@ module.exports = {
   addAuctionToFavoriteList,
   ratingOwnerAuction,
   getBidListByMember,
+  removeAuctionFromFavorite,
 };
