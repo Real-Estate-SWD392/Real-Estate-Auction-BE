@@ -19,6 +19,7 @@ const {
 const authenticateJWT = require("../utils/authenticateJWT");
 const authorization = require("../utils/authorization");
 const { STAFF_ROLE, MEMBER_ROLE } = require("../constant/role");
+const { createReport } = require("../controller/report.controller");
 
 const router = express.Router();
 
@@ -81,5 +82,6 @@ router.put(
   authorization([STAFF_ROLE]),
   handleAuctionRequest
 );
+router.post("/report", createReport);
 
 module.exports = router;
