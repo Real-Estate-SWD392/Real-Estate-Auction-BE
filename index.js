@@ -24,6 +24,7 @@ const chatBoxRouter = require("./router/chat-box.router");
 const messageRouter = require("./router/message.router");
 const bidRouter = require("./router/bid.router");
 const billRouter = require("./router/bill.router");
+const reportRouter = require("./router/report.router");
 
 const passport = require("passport");
 require("./services/passport");
@@ -132,6 +133,7 @@ app.use(
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   bidRouter
 );
+app.use("/report", authenticateJWT, authorization([STAFF_ROLE]), reportRouter);
 
 app.use(
   "/bill",

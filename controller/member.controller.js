@@ -93,16 +93,16 @@ const getBidListByMember = async (req, res) => {
 
 const addAuctionToFavoriteList = async (req, res) => {
   try {
-    const id = req.params.id;
+    const userId = req.params.id;
 
     const { _id } = req.body;
 
-    const checkAuctionExist = await userModel.find({
-      _id: id,
-      favoriteList: { $in: _id },
+    const checkAuctionExist = await userModel.findOne({
+      _id: userId,
+      favoriteList: { $in: [_id] },
     });
 
-    if (checkAuctionExist.length > 0) {
+    if (checkAuctionExist) {
       return res
         .status(HTTP.BAD_REQUEST)
         .json({ message: "This auction is already on favourite list" });
