@@ -31,6 +31,7 @@ require("./services/passport");
 const authenticateJWT = require("./utils/authenticateJWT");
 const authorization = require("./utils/authorization");
 const { STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE } = require("./constant/role");
+const { auctionModel } = require("./models/auction.model");
 
 const app = express();
 
@@ -146,6 +147,46 @@ app.use(
 app.listen(port, (req, res) => {
   console.log(`Listen port: ${port}`);
 });
+
+async function updateCountdown() {
+  try {
+    const auctions = await auctionModel.find();
+
+    auctions.forEach(async (auction) => {
+      // Decrease countdown timer by 1 second
+
+      if (auction.second > 0) {
+        auction.second--;
+      } else if (auction.minute > 0) {
+        auction.second = 59;
+        auction.minute--;
+      } else if (auction.hour > 0) {
+        auction.second = 59;
+        auction.minute = 59;
+        auction.hour--;
+      } else if (auction.day > 0) {
+        auction.second = 59;
+        auction.minute = 59;
+        auction.hour = 23;
+        auction.day--;
+      } else {
+        // Time's up, stop the countdown
+        auction.second = 0;
+        auction.minute = 0;
+        auction.hour = 0;
+        auction.day = 0;
+      }
+
+      // Save updated auction
+      await auction.save();
+    });
+  } catch (err) {
+    console.error("Error updating countdown:", err);
+  }
+}
+
+// Call updateCountdown function periodically (e.g., every second)
+setInterval(updateCountdown, 1000);
 
 // CONNECT DATABASE
 db.connect();

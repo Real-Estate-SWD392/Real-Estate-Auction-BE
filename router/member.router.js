@@ -16,6 +16,5 @@ router.patch("/update-profile/:id", editProfileMemberByID);
 router.put("/add-favorite-auction/:id", addAuctionToFavoriteList);
 router.put("/remove-favorite-auction/:id", removeAuctionFromFavoriteList);
 router.post("/rating-owner-auction/:id", ratingOwnerAuction);
-router.put("/remove-favorite-auction/:id", removeAuctionFromFavorite);
 
 module.exports = router;

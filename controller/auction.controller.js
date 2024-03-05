@@ -433,6 +433,36 @@ const startAuction = async (req, res) => {
   }
 };
 
+const updateAuctionTime = async (req, res) => {
+  try {
+    // const auctionToStart = await auctionModel.find({ status: "Not Start" });
+
+    console.log(req.body);
+
+    const auctionList = req.body.auctionList;
+
+    await Promise.all(
+      auctionList.map(async (auction) => {
+        const checkUpdate = await auctionModel.findOneAndUpdate(
+          { _id: auction._id },
+          {
+            day: auction.day,
+            hour: auction.hour,
+            minute: auction.minute,
+            second: auction.second,
+          },
+          { new: true }
+        );
+      })
+    );
+
+    res.status(HTTP.OK).json({ success: true, response: checkUpdate });
+  } catch (error) {
+    console.log(error);
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
 const updateAuction = async (req, res) => {
   try {
     const {
@@ -447,8 +477,6 @@ const updateAuction = async (req, res) => {
       realEstateID,
     } = req.body;
 
-    console.log(startPrice);
-
     const _id = req.params.id;
 
     const newValues = {
@@ -458,17 +486,18 @@ const updateAuction = async (req, res) => {
       hour,
       minute,
       second,
-      status,
       buyNowPrice,
       realEstateID: mongoose.Types.ObjectId.createFromHexString(realEstateID),
     };
 
-    const isValidStatus = auctionEnums.status.find(
-      (check) => check === newValues.status
-    );
+    // const isValidStatus = auctionEnums.status.find(
+    //   (check) => check === newValues.status
+    // );
 
-    if (!isValidStatus)
-      return res.status(HTTP.NOT_FOUND).json({ message: "Status not valid" });
+    // console.log(auctionEnums.status[0], status);
+
+    // if (!isValidStatus)
+    //   return res.status(HTTP.NOT_FOUND).json({ message: "Status not valid" });
 
     const oldValues = await auctionModel.findOne(
       { _id },
@@ -491,7 +520,9 @@ const updateAuction = async (req, res) => {
         { new: true }
       );
 
-      if (checkUpdate) {
+      console.log(checkUpdate);
+
+      if (!checkUpdate) {
         res.status(HTTP.BAD_REQUEST).json({
           success: false,
           error: EXCEPTIONS.FAIL_TO_UPDATE_ITEM,
@@ -566,6 +597,8 @@ const deleteAuctionByStaff = async (req, res) => {
 const closeAuction = async (req, res) => {
   try {
     const auctionId = req.params.id;
+
+    console.log(auctionId);
 
     const checkClose = await auctionModel
       .findOneAndUpdate(
@@ -707,4 +740,5 @@ module.exports = {
   closeAuction,
   setWinner,
   startAuction,
+  updateAuctionTime,
 };

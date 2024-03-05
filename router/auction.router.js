@@ -19,6 +19,7 @@ const {
   closeAuction,
   setWinner,
   startAuction,
+  updateAuctionTime,
 } = require("../controller/auction.controller");
 const authenticateJWT = require("../utils/authenticateJWT");
 const authorization = require("../utils/authorization");
@@ -56,6 +57,8 @@ router.put(
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   updateAuction
 );
+
+router.put("/update-time", updateAuctionTime);
 
 router.put("/startAuction", startAuction);
 
