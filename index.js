@@ -38,7 +38,7 @@ const app = express();
 const corsOptions = {
   origin: [
     "http://localhost:3000",
-    // "https://f-clubs-event-management.vercel.app",
+    "https://real-estate-auction-be.onrender.com",
   ],
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],

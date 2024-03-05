@@ -18,13 +18,13 @@ module.exports = {
   },
   // schemes:[ "http" ,"https"],
   servers: [
-    // {
-    //   url: "https://partypal-vwog.onrender.com/api",
-    //   description:
-    //     process.env.NODE_ENV === "development"
-    //       ? "Development server"
-    //       : "Production server",
-    // },
+    {
+      url: "https://real-estate-auction-be.onrender.com",
+      description:
+        process.env.NODE_ENV === "development"
+          ? "Development server"
+          : "Production server",
+    },
     {
       url: "http://localhost:8080/",
       description:
