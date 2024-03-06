@@ -8,7 +8,10 @@ const getBidByAuction = async (req, res) => {
   try {
     const auctionID = req.params.auctionID;
 
-    const bid = await bidModel.find({ auctionID });
+    const bid = await bidModel
+      .find({ auctionID })
+      .sort({ createdAt: -1 })
+      .populate("userID");
 
     if (bid) {
       res.status(HTTP.OK).json({ success: true, response: bid });
@@ -134,14 +137,20 @@ const createBid = async (req, res) => {
 
     const auction = await auctionModel.findOne({ _id: auctionID });
 
-    const oldNumberOfBidder = auction.numberOfBidder;
+    console.log(auction);
 
-    console.log(oldNumberOfBidder);
-
-    if (auction.currentPrice >= price) {
+    if (auction.status === "End")
       return res
         .status(HTTP.BAD_REQUEST)
-        .json({ message: "Your bid must more than current price!!" });
+        .json({ success: false, message: "Auction Is Ended" });
+
+    const oldNumberOfBidder = auction.numberOfBidder;
+
+    if (auction.currentPrice >= price) {
+      return res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        message: "Your bid must more than current price!!",
+      });
     }
 
     const bid = new bidModel({
@@ -157,19 +166,26 @@ const createBid = async (req, res) => {
 
     const createBid = await bid.save();
 
-    await createBid.populate({
-      path: "auctionID",
-      populate: [
-        {
-          path: "realEstateID",
+    await createBid.populate([
+      {
+        path: "auctionID",
+        populate: [
+          {
+            path: "realEstateID",
 
-          populate: [{ path: "ownerID" }],
-        },
-      ],
-    });
+            populate: [{ path: "ownerID" }],
+          },
+        ],
+      },
+      { path: "userID" },
+    ]);
 
     if (createBid && updateAuction) {
-      res.status(HTTP.INSERT_OK).json({ success: true, response: createBid });
+      res.status(HTTP.INSERT_OK).json({
+        success: true,
+        response: createBid,
+        message: "Place Bid Successfully!!",
+      });
     } else {
       res
         .status(HTTP.BAD_REQUEST)

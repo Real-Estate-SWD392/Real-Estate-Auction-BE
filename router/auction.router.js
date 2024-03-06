@@ -62,7 +62,7 @@ router.put("/update-time", updateAuctionTime);
 
 router.put("/startAuction", startAuction);
 
-router.put("/setWinner", setWinner);
+router.put("/setWinner/:id", setWinner);
 
 router.put(
   "/addMember/:auctionID/:accountID",

@@ -639,7 +639,7 @@ const handleAuctionRequest = async (req, res) => {
 
     const startDate = new Date(req.body.startDate);
 
-    startDate.setDate(startDate.getDate() + 1);
+    startDate.setHours(startDate.getHours() + 7); // Add 7 hours
 
     console.log(startDate);
 

@@ -37,13 +37,14 @@ const sendVerifyEmail = async (user) => {
 
 const sendNotificationMail = async (user, startDate) => {
   try {
+    console.log(startDate);
     const mailOption = {
       from: `Email from <Pinterest Real Estate Auction>`,
       to: user.email,
       subject: "Your Auction Is Approve",
       html: `<p>Your Auction will start at: ${moment(startDate)
-        .subtract(1, "days")
-        .format("DD-MM-YYYY")}</p> `,
+        .subtract(7, "hours")
+        .format("DD-MM-YYYY HH:mm:ss")}</p> `,
     };
 
     // CREATE EMAIL TRANSPORTER

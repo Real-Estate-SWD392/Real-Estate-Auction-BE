@@ -167,4 +167,18 @@ const getBill = async (req, res) => {
   }
 };
 
-module.exports = { createBill, getBill };
+const getUserBill = async (req, res) => {
+  try {
+    const memberID = req.params.id;
+
+    const bill = await billModel.find({ memberID }).populate("memberID");
+
+    res.status(HTTP.OK).json({ success: true, response: bill });
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json({ success: false, error: error });
+  }
+};
+
+module.exports = { createBill, getBill, getUserBill };

@@ -32,6 +32,7 @@ const authenticateJWT = require("./utils/authenticateJWT");
 const authorization = require("./utils/authorization");
 const { STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE } = require("./constant/role");
 const { auctionModel } = require("./models/auction.model");
+const bidModel = require("./models/bid.model");
 
 const app = express();
 
@@ -150,7 +151,7 @@ app.listen(port, (req, res) => {
 
 async function updateCountdown() {
   try {
-    const auctions = await auctionModel.find();
+    const auctions = await auctionModel.find({ status: "In Auction" });
 
     auctions.forEach(async (auction) => {
       // Decrease countdown timer by 1 second
@@ -175,9 +176,20 @@ async function updateCountdown() {
         auction.minute = 0;
         auction.hour = 0;
         auction.day = 0;
+
+        const bid = await bidModel
+          .find({ auctionID: auction._id })
+          .sort({ createdAt: -1 });
+
+        console.log(bid);
+
+        auction.winner = bid[0]?.userID;
+
+        auction.status = "End";
       }
 
       // Save updated auction
+
       await auction.save();
     });
   } catch (err) {
