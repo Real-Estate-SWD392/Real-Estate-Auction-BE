@@ -266,6 +266,22 @@ const updateRealEstate = async (req, res) => {
   }
 };
 
+const closeRealEstate = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    const checkClose = await realEstateModel.findOneAndUpdate(
+      { _id },
+      { status: "Sold" }
+    );
+
+    res.status(HTTP.OK).json({ success: true, response: checkClose });
+  } catch (error) {
+    console.log(error);
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
+  }
+};
+
 const removeRealEstate = async (req, res) => {
   try {
     const _id = req.params.id;
@@ -383,4 +399,5 @@ module.exports = {
   removeRealEstate,
   uploadPDF,
   uploadImages,
+  closeRealEstate,
 };

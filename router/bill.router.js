@@ -1,10 +1,16 @@
 const express = require("express");
-const { createBill, getBill } = require("../controller/bill.controller");
-const { getBidListByMember } = require("../controller/member.controller");
+const {
+  createBill,
+  getBill,
+  getUserBill,
+  checkAlreadyPay,
+} = require("../controller/bill.controller");
 
 const router = express.Router();
 
-router.get("/member/:id", getBidListByMember);
+router.get("/member/:id", getUserBill);
+
+router.get("/checkAlreadyPay/:memberID/:auctionID", checkAlreadyPay);
 
 router.post("/:memberID", createBill);
 

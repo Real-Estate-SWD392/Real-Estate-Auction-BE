@@ -4,14 +4,28 @@ const reportSchema = mongoose.Schema(
   {
     auctionId: { type: mongoose.Types.ObjectId, ref: "Auction" },
     ownerId: { type: mongoose.Types.ObjectId, ref: "User" },
-    reporterId: { type: mongoose.Types.ObjectId, ref: "User" },
-    reportReason: { type: String, minLength: 5, required: true },
+    reportDetail: [
+      {
+        reporterId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        reportReason: {
+          type: String,
+          enum: [
+            "Fraudulent Activity",
+            "Inappropriate Content",
+            "Scam/Missing Information",
+            "Price Manipulation",
+            "Counterfeit Items",
+            "Unfair Bidding Practices",
+          ],
+          required: true,
+        },
+        reportDescription: { type: String, minLength: 5, required: true },
+      },
+    ],
     status: {
       type: String,
       default: "Pending",
-      enum: {
-        values: ["Pending", "Approved", "Rejected"],
-      },
+      enum: ["Pending", "Approved", "Rejected"],
     },
   },
   { timestamps: true }

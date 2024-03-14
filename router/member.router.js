@@ -14,7 +14,10 @@ router.get("/:id", getMemberByID);
 router.get("/bid-list/:id", getBidListByMember);
 router.patch("/update-profile/:id", editProfileMemberByID);
 router.put("/add-favorite-auction/:id", addAuctionToFavoriteList);
-router.put("/remove-favorite-auction/:id", removeAuctionFromFavoriteList);
+router.put(
+  "/remove-favorite-auction/:auctionID",
+  removeAuctionFromFavoriteList
+);
 router.post("/rating-owner-auction/:id", ratingOwnerAuction);
 
 module.exports = router;

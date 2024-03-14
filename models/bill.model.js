@@ -22,7 +22,7 @@ const billSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: {
-        values: ["Pay Auction Fee", "Place Bid", "Buy Now"],
+        values: ["Pay Auction Fee", "Pay Winning Auction", "Buy Now"],
       },
       default: "Pending", // Trạng thái mặc định là "Chờ xử lý",
       required: true,

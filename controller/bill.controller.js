@@ -140,7 +140,12 @@ const getBill = async (req, res) => {
     if (req.query.vnp_TransactionStatus == "00") {
       const updateBill = await billModel
         .findOneAndUpdate({ _id: id }, { status: "Success" }, { new: true })
-        .populate("memberID");
+        .populate([
+          {
+            path: "auctionID",
+          },
+          { path: "memberID" },
+        ]);
 
       res.status(HTTP.OK).json({
         success: true,
@@ -150,7 +155,12 @@ const getBill = async (req, res) => {
     } else {
       const updateBill = await billModel
         .findOneAndUpdate({ _id: id }, { status: "Fail" }, { new: true })
-        .populate("memberID");
+        .populate([
+          {
+            path: "auctionID",
+          },
+          { path: "memberID" },
+        ]);
 
       res.status(HTTP.BAD_REQUEST).json({
         success: false,
@@ -181,4 +191,32 @@ const getUserBill = async (req, res) => {
   }
 };
 
-module.exports = { createBill, getBill, getUserBill };
+const checkAlreadyPay = async (req, res) => {
+  try {
+    const memberID = req.params.memberID;
+    const auctionID = req.params.auctionID;
+
+    let check = false;
+
+    const bill = await billModel
+      .find({
+        memberID,
+        auctionID,
+        status: "Success",
+        type: { $in: ["Pay Winning Auction", "Buy Now"] },
+      })
+      .populate("memberID");
+
+    console.log(bill);
+
+    if (bill.length > 0) check = true;
+
+    res.status(HTTP.OK).json({ success: true, response: check });
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json({ success: false, error: error });
+  }
+};
+
+module.exports = { createBill, getBill, getUserBill, checkAlreadyPay };

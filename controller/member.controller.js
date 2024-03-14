@@ -139,12 +139,12 @@ const addAuctionToFavoriteList = async (req, res) => {
 
 const removeAuctionFromFavoriteList = async (req, res) => {
   try {
-    const id = req.params.id;
+    const userID = req.body.id;
 
-    const { _id } = req.body;
+    const auctionID = req.params.auctionID;
 
     const checkAuctionExist = await userModel.find({
-      favoriteList: { $in: _id },
+      favoriteList: { $in: [auctionID] },
     });
 
     if (checkAuctionExist.length <= 0) {
@@ -155,10 +155,10 @@ const removeAuctionFromFavoriteList = async (req, res) => {
 
     const removeFavoriteAuction = await userModel
       .findOneAndUpdate(
-        { _id: id },
+        { _id: userID },
         {
           $pull: {
-            favoriteList: _id,
+            favoriteList: auctionID,
           },
         },
         { new: true } // Add select option to specify the field to populate

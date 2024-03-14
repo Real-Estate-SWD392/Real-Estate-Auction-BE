@@ -11,6 +11,7 @@ require("dotenv").config();
 
 // DEFINE DATABASE
 const db = require("./config/database");
+const socket = require("./config/socket");
 
 // DEFINE ROUTER
 const authRouter = require("./router/auth.router");
@@ -33,6 +34,7 @@ const authorization = require("./utils/authorization");
 const { STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE } = require("./constant/role");
 const { auctionModel } = require("./models/auction.model");
 const bidModel = require("./models/bid.model");
+const { realEstateModel } = require("./models/real-estate.model");
 
 const app = express();
 
@@ -135,7 +137,7 @@ app.use(
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   bidRouter
 );
-app.use("/report", authenticateJWT, authorization([STAFF_ROLE]), reportRouter);
+app.use("/report", authenticateJWT, reportRouter);
 
 app.use(
   "/bill",
@@ -143,6 +145,9 @@ app.use(
   authorization([STAFF_ROLE, MEMBER_ROLE]),
   billRouter
 );
+
+// CONNECT SOCKET
+socket.connect();
 
 // CONNECT TO PORT
 app.listen(port, (req, res) => {
@@ -181,11 +186,14 @@ async function updateCountdown() {
           .find({ auctionID: auction._id })
           .sort({ createdAt: -1 });
 
-        console.log(bid);
-
         auction.winner = bid[0]?.userID;
 
         auction.status = "End";
+
+        const closeRealEstate = await realEstateModel.findOneAndUpdate(
+          { _id: auction.realEstateID._id },
+          { status: "Pending" }
+        );
       }
 
       // Save updated auction

@@ -42,7 +42,7 @@ const registerAccount = async (req, res) => {
         errors: errors.array(),
       });
 
-    let user = new userModel({
+    let userInfor = {
       email,
       password,
       firstName,
@@ -50,7 +50,9 @@ const registerAccount = async (req, res) => {
       phoneNumber,
       verifyToken: crypto.randomBytes(64).toString("hex"),
       verifyTokenExpires: Date.now() + 1800000,
-    });
+    };
+
+    let user = new userModel(userInfor);
 
     const checkUser = await user.save();
 
@@ -250,6 +252,7 @@ const verifyEmail = async (req, res) => {
 
     if (user && checkTokenValid) {
       user.isVerified = true;
+      user.status = "Active";
       await user.save();
 
       res.sendFile(path.join(__dirname, "./../views/verified.html"));

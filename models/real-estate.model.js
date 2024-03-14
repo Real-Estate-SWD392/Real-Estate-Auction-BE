@@ -21,7 +21,14 @@ const realEstateSchema = new mongoose.Schema(
       type: String,
       default: "Available",
       enum: {
-        values: ["Sold", "Available", "In Auction", "Pending", "Rejected"],
+        values: [
+          "Sold",
+          "Available",
+          "In Auction",
+          "Pending",
+          "Rejected",
+          "Wait For Approval",
+        ],
       },
     },
 

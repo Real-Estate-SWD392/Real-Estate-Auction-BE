@@ -66,8 +66,6 @@ const userSchema = new mongoose.Schema(
       default: "Pending",
       enum: { values: ["Active", "Pending", "Banned", "Inactive"] },
     },
-
-    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

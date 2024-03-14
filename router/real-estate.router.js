@@ -10,6 +10,7 @@ const {
   getRealEstateByOwner,
   updateRealEstate,
   removeRealEstate,
+  closeRealEstate,
 } = require("../controller/real-estate.controller");
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.get("/type/:type", getRealEstateByType);
 router.post("/", createNewRealEstate);
 
 router.put("/:id", updateRealEstate);
+router.put("/close/:id", closeRealEstate);
 
 router.put("/remove/:id", removeRealEstate);
 

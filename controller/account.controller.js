@@ -124,6 +124,47 @@ const deleteAccount = async (req, res) => {
   }
 };
 
+const createAccount = async (req, res) => {
+  try {
+    const { firstName, lastName, email, phoneNumber, role } = req.body;
+
+    let checkExistUser = await userModel.findOne({ email });
+
+    if (checkExistUser)
+      return res
+        .status(HTTP.BAD_REQUEST)
+        .json({ succes: false, error: EXCEPTIONS.USER_HAS_EXIST });
+
+    let user = new userModel({
+      email,
+      password: "12345678",
+      firstName,
+      lastName,
+      phoneNumber,
+      role,
+    });
+
+    const checkUser = await user.save();
+
+    if (checkUser) {
+      res.status(200).json({
+        success: true,
+        response: user,
+        message: "Create Account successfully!",
+      });
+    } else {
+      res
+        .status(HTTP.INTERNAL_SERVER_ERROR)
+        .json({ message: "Create Account Fail" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(HTTP.INTERNAL_SERVER_ERROR).json({
+      message: "Create Account Fail",
+    });
+  }
+};
+
 const banAccount = async (req, res) => {
   try {
     const _id = req.params.id;
@@ -153,10 +194,41 @@ const banAccount = async (req, res) => {
   }
 };
 
+const unbanAccount = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    const checkDeleteAccount = await userModel.findOneAndUpdate(
+      { _id },
+      { status: "Active" },
+      { new: true }
+    );
+
+    if (checkDeleteAccount.status === "Active") {
+      res.status(HTTP.OK).json({
+        success: true,
+        response: checkDeleteAccount,
+        message: "Unban Account Succesfully!!",
+      });
+    } else {
+      res.status(HTTP.BAD_REQUEST).json({
+        success: false,
+        message: "Unban Account Failed!!",
+      });
+    }
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json(EXCEPTIONS.INTERNAL_SERVER_ERROR);
+  }
+};
+
 module.exports = {
   getAllAccount,
   getAccountByRole,
   changeAccountPassword,
   deleteAccount,
   banAccount,
+  unbanAccount,
+  createAccount,
 };

@@ -91,18 +91,13 @@ const getAuctionByStatus = async (req, res) => {
 
     const auction = await auctionModel
       .find({ status: status })
+      .sort({ createdAt: -1 })
       .populate("realEstateID");
-    if (auction.length > 0) {
-      res.status(HTTP.OK).json({
-        success: true,
-        response: auction,
-      });
-    } else {
-      res.status(HTTP.NOT_FOUND).json({
-        success: false,
-        error: EXCEPTIONS.FAIL_TO_GET_ITEM,
-      });
-    }
+
+    res.status(HTTP.OK).json({
+      success: true,
+      response: auction,
+    });
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
   }
@@ -139,9 +134,23 @@ const setWinner = async (req, res) => {
     const winner = await auctionModel
       .findOneAndUpdate(
         { _id },
-        { winner: userID, day: 0, hour: 0, minute: 0, second: 0, status: "End" }
+        {
+          winner: userID,
+          day: 0,
+          hour: 0,
+          minute: 0,
+          second: 0,
+          status: "End",
+        },
+        { new: true }
       )
       .populate("realEstateID");
+
+    const closeRealEstate = await realEstateModel.findOneAndUpdate(
+      { _id: winner.realEstateID._id },
+      { status: "Sold" },
+      { new: true }
+    );
 
     return res.status(HTTP.OK).json({
       success: true,
@@ -275,7 +284,7 @@ const createAuction = async (req, res) => {
 
     const updateRealState = await realEstateModel.findOneAndUpdate(
       { _id: realEstateID },
-      { status: "Pending" }
+      { status: "Wait For Approval" }
     );
 
     if (checkAuction && updateRealState) {

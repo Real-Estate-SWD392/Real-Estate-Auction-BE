@@ -44,13 +44,7 @@ const getUserBid = async (req, res) => {
       ],
     });
 
-    if (bid) {
-      res.status(HTTP.OK).json({ success: true, response: bid });
-    } else {
-      res
-        .status(HTTP.NOT_FOUND)
-        .json({ success: false, message: EXCEPTIONS.FAIL_TO_GET_ITEM });
-    }
+    res.status(HTTP.OK).json({ success: true, response: bid });
   } catch (error) {
     console.log(error);
     res
@@ -133,11 +127,7 @@ const createBid = async (req, res) => {
   try {
     const { auctionID, userID, price } = req.body;
 
-    console.log(req.body);
-
     const auction = await auctionModel.findOne({ _id: auctionID });
-
-    console.log(auction);
 
     if (auction.status === "End")
       return res

@@ -5,6 +5,8 @@ const {
   getAccountByRole,
   getAllAccount,
   banAccount,
+  unbanAccount,
+  createAccount,
 } = require("../controller/account.controller");
 const {
   registerValidator,
@@ -17,6 +19,8 @@ const router = express.Router();
 
 router.get("/", authorization([ADMIN_ROLE]), getAllAccount);
 
+router.post("/", authorization([ADMIN_ROLE]), createAccount);
+
 router.get("/role/:role", authorization([ADMIN_ROLE]), getAccountByRole);
 
 router.put(
@@ -27,5 +31,6 @@ router.put(
 
 router.put("/remove/:id", authorization([ADMIN_ROLE]), deleteAccount);
 router.put("/ban/:id", authorization([ADMIN_ROLE]), banAccount);
+router.put("/unban/:id", authorization([ADMIN_ROLE]), unbanAccount);
 
 module.exports = router;
