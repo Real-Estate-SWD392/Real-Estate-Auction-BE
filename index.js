@@ -26,6 +26,7 @@ const messageRouter = require("./router/message.router");
 const bidRouter = require("./router/bid.router");
 const billRouter = require("./router/bill.router");
 const reportRouter = require("./router/report.router");
+const ewalletRouter = require("./router/e-wallet.router");
 
 const passport = require("passport");
 require("./services/passport");
@@ -114,6 +115,14 @@ app.use(
   authorization([STAFF_ROLE, MEMBER_ROLE, ADMIN_ROLE]),
   memberRouter
 );
+
+app.use(
+  "/e-wallet",
+  authenticateJWT,
+  authorization([MEMBER_ROLE]),
+  ewalletRouter
+);
+
 app.use("/auction", auctionRouter);
 app.use("/province", authenticateJWT, provinceRouter);
 app.use("/address", addressRouter);

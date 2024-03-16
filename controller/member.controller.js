@@ -110,7 +110,7 @@ const addAuctionToFavoriteList = async (req, res) => {
 
     const addFavoriteAuction = await userModel
       .findOneAndUpdate(
-        { _id: id },
+        { _id: userId },
         {
           $push: {
             favoriteList: _id,

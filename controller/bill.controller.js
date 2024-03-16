@@ -191,6 +191,29 @@ const getUserBill = async (req, res) => {
   }
 };
 
+const createNewBill = async (req, res) => {
+  try {
+    const { memberID } = req.params;
+
+    const { auctionID, total, payment, type } = req.body;
+
+    const newBill = await new billModel({
+      memberID,
+      auctionID,
+      total,
+      payment,
+      type,
+      status: "Success",
+    }).save();
+
+    res.status(HTTP.OK).json({ success: true, response: newBill });
+  } catch (error) {
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json({ success: false, error: error });
+  }
+};
+
 const checkAlreadyPay = async (req, res) => {
   try {
     const memberID = req.params.memberID;
@@ -219,4 +242,10 @@ const checkAlreadyPay = async (req, res) => {
   }
 };
 
-module.exports = { createBill, getBill, getUserBill, checkAlreadyPay };
+module.exports = {
+  createBill,
+  getBill,
+  getUserBill,
+  checkAlreadyPay,
+  createNewBill,
+};

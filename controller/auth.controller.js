@@ -15,6 +15,7 @@ const {
 } = require("../utils/generateAccountToken");
 const userModel = require("../models/user.model");
 const { lte } = require("lodash");
+const ewalletModel = require("../models/e-wallet.model");
 
 const registerAccount = async (req, res) => {
   try {
@@ -55,6 +56,10 @@ const registerAccount = async (req, res) => {
     let user = new userModel(userInfor);
 
     const checkUser = await user.save();
+
+    const checkEwallet = await new ewalletModel({
+      ownerID: checkUser._id,
+    }).save();
 
     await sendVerifyEmail(user);
 
