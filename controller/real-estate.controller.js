@@ -182,6 +182,8 @@ const updateRealEstate = async (req, res) => {
       ward,
     } = req.body;
 
+    console.log(req.body);
+
     const isStatusValid = realEstateEnums.status.find(
       (check) => check === status
     );
