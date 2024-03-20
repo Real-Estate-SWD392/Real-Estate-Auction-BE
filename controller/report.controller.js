@@ -21,17 +21,11 @@ const getAllReport = async (req, res) => {
       ])
       .populate("ownerId")
       .populate("reportDetail.reporterId");
-    if (reports.length > 0) {
-      res.status(HTTP.OK).json({
-        success: true,
-        response: reports,
-      });
-    } else {
-      res.status(HTTP.NOT_FOUND).json({
-        success: false,
-        error: EXCEPTIONS.FAIL_TO_GET_ITEM,
-      });
-    }
+
+    res.status(HTTP.OK).json({
+      success: true,
+      response: reports,
+    });
   } catch (error) {
     res.status(HTTP.INTERNAL_SERVER_ERROR).json(error);
     console.log("er: ", error);

@@ -4,12 +4,12 @@ const bcrypt = require("bcrypt");
 const billSchema = new mongoose.Schema(
   {
     memberID: { type: String, ref: "User", required: true },
-    auctionID: { type: String, ref: "Auction", required: true },
+    auctionID: { type: String, ref: "Auction" },
     total: { type: Number, required: true },
     payment: {
       type: String,
       maxLength: 255,
-      enum: { values: ["Cash", "VNPay"] },
+      enum: { values: ["Cash", "VNPay", "E-wallet"] },
     },
     status: {
       type: String,

@@ -39,6 +39,7 @@ const getAuctionByRealEstate = async (req, res) => {
     const auctions = await auctionModel
       .findOne({ realEstateID: id })
       .populate("realEstateID");
+
     if (auctions) {
       res.status(HTTP.OK).json({
         success: true,
@@ -284,7 +285,7 @@ const createAuction = async (req, res) => {
 
     const updateRealState = await realEstateModel.findOneAndUpdate(
       { _id: realEstateID },
-      { status: "Wait For Approval" }
+      { status: "Requesting" }
     );
 
     if (checkAuction && updateRealState) {
@@ -491,6 +492,7 @@ const updateAuction = async (req, res) => {
     const newValues = {
       startPrice,
       priceStep,
+      currentPrice: startPrice,
       day,
       hour,
       minute,
@@ -650,8 +652,6 @@ const handleAuctionRequest = async (req, res) => {
 
     startDate.setHours(startDate.getHours() + 7); // Add 7 hours
 
-    console.log(startDate);
-
     var filteredAuction = null;
     var filteredRealEstate = null;
     var messageAution = "";
@@ -673,14 +673,14 @@ const handleAuctionRequest = async (req, res) => {
           ],
         });
 
-      // if (filterAuction) {
-      //   filteredRealEstate = await realEstateModel.findOneAndUpdate(
-      //     {
-      //       _id: filteredAuction.realEstateID,
-      //     },
-      //     { status: "In Auction" }
-      //   );
-      // }
+      if (filterAuction) {
+        filteredRealEstate = await realEstateModel.findOneAndUpdate(
+          {
+            _id: filteredAuction.realEstateID,
+          },
+          { status: "Not Start" }
+        );
+      }
 
       if (!filteredAuction.startDate) {
         return res.status(HTTP.BAD_REQUEST).json({ success: false });
@@ -708,7 +708,7 @@ const handleAuctionRequest = async (req, res) => {
           {
             _id: filteredAuction.realEstateID,
           },
-          { status: "Available" }
+          { status: "Rejected" }
         );
       }
       messageAution = "Denied successfully!";

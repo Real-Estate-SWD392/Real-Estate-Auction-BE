@@ -26,15 +26,9 @@ const auctionSchema = mongoose.Schema(
 
     status: {
       type: String,
-      default: "Wait For Approval",
+      default: "Requesting",
       enum: {
-        values: [
-          "Wait For Approval",
-          "Not Start",
-          "In Auction",
-          "End",
-          "Cancel",
-        ],
+        values: ["Requesting", "Not Start", "In Auction", "End", "Cancel"],
       },
     },
     buyNowPrice: { type: Number },
@@ -47,9 +41,9 @@ const auctionSchema = mongoose.Schema(
     },
     checkedStatus: {
       type: String,
-      default: "Wait For Approval",
+      default: "Requesting",
       enum: {
-        values: ["Wait For Approval", "Accepted", "Denied"],
+        values: ["Requesting", "Accepted", "Denied"],
       },
     },
 

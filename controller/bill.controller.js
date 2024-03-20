@@ -33,6 +33,8 @@ const createBill = async (req, res) => {
     type,
   }).save();
 
+  console.log(newBill);
+
   process.env.TZ = "Asia/Ho_Chi_Minh";
   var ipAddr =
     req.headers["x-forwarded-for"] ||
@@ -88,6 +90,8 @@ const createBill = async (req, res) => {
   var signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
   vnp_Params["vnp_SecureHash"] = signed;
   vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
+
+  console.log(vnpUrl);
 
   res.status(HTTP.OK).json({ url: vnpUrl });
 };
@@ -181,7 +185,10 @@ const getUserBill = async (req, res) => {
   try {
     const memberID = req.params.id;
 
-    const bill = await billModel.find({ memberID }).populate("memberID");
+    const bill = await billModel
+      .find({ memberID })
+      .sort({ createdAt: -1 })
+      .populate("memberID");
 
     res.status(HTTP.OK).json({ success: true, response: bill });
   } catch (error) {
@@ -208,6 +215,7 @@ const createNewBill = async (req, res) => {
 
     res.status(HTTP.OK).json({ success: true, response: newBill });
   } catch (error) {
+    console.log(error);
     res
       .status(HTTP.INTERNAL_SERVER_ERROR)
       .json({ success: false, error: error });

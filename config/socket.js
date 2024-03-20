@@ -17,6 +17,14 @@ const connect = () => {
         io.emit("currentBid", newBid);
       });
 
+      socket.on("buyNow", async (buy) => {
+        console.log(buy);
+
+        io.emit("currentAuction", buy);
+
+        // // // Broadcast the new bid to all connected clients
+      });
+
       socket.on("disconnect", () => {
         console.log("Client disconnected");
       });
