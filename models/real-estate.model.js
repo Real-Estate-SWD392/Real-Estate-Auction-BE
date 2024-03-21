@@ -29,6 +29,7 @@ const realEstateSchema = new mongoose.Schema(
           "Rejected",
           "Requesting",
           "Not Start",
+          "End",
         ],
       },
     },

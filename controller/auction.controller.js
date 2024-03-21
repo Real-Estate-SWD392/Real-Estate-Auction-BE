@@ -13,7 +13,7 @@ const getAllAuction = async (req, res) => {
   try {
     const auctions = await auctionModel
       .find({})
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1 })
       .populate("realEstateID");
     if (auctions.length > 0) {
       res.status(HTTP.OK).json({
@@ -39,6 +39,17 @@ const getAuctionByRealEstate = async (req, res) => {
     const auctions = await auctionModel
       .findOne({ realEstateID: id })
       .populate("realEstateID");
+
+    if (auctions.winner !== "") {
+      const auctionWinner = await auctionModel
+        .findOne({ _id: auctions._id })
+        .populate("realEstateID")
+        .populate("winner");
+      return res.status(HTTP.OK).json({
+        success: true,
+        response: auctionWinner,
+      });
+    }
 
     if (auctions) {
       res.status(HTTP.OK).json({
@@ -489,6 +500,8 @@ const updateAuction = async (req, res) => {
 
     const _id = req.params.id;
 
+    console.log(req.body);
+
     const newValues = {
       startPrice,
       priceStep,
@@ -497,6 +510,7 @@ const updateAuction = async (req, res) => {
       hour,
       minute,
       second,
+      status,
       buyNowPrice,
       realEstateID: mongoose.Types.ObjectId.createFromHexString(realEstateID),
     };
@@ -529,6 +543,11 @@ const updateAuction = async (req, res) => {
         { _id },
         newValues,
         { new: true }
+      );
+
+      const updateRealEstate = await realEstateModel.findOneAndUpdate(
+        { _id: checkUpdate.realEstateID },
+        { status: "Requesting" }
       );
 
       console.log(checkUpdate);

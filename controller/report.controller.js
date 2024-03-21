@@ -1,6 +1,7 @@
 const EXCEPTIONS = require("../exceptions/Exceptions");
 const HTTP = require("../HTTP/HttpStatusCode");
 const { auctionModel } = require("../models/auction.model");
+const { realEstateModel } = require("../models/real-estate.model");
 const { reportModel } = require("../models/report.model");
 
 const getAllReport = async (req, res) => {
@@ -103,7 +104,14 @@ const handleReport = async (req, res) => {
 
       const closeAuction = await auctionModel.findOneAndUpdate(
         { _id: handleReport.auctionId },
-        { status: "End", day: 0, hour: 0, minuute: 0, second: 0 }
+        { status: "End", day: 0, hour: 0, minute: 0, second: 0 }
+      );
+
+      const closeRealEstate = await realEstateModel.findOneAndUpdate(
+        {
+          _id: closeAuction.realEstateID,
+        },
+        { status: "End" }
       );
       messageReport = "Accept successfully!";
     } else if (status === "Rejected") {

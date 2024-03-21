@@ -199,10 +199,19 @@ async function updateCountdown() {
 
         auction.status = "End";
 
-        const closeRealEstate = await realEstateModel.findOneAndUpdate(
-          { _id: auction.realEstateID._id },
-          { status: "Pending" }
-        );
+        console.log(auction.numberOfBidder);
+
+        if (auction.numberOfBidder > 0) {
+          const closeRealEstate = await realEstateModel.findOneAndUpdate(
+            { _id: auction.realEstateID._id },
+            { status: "Pending" }
+          );
+        } else {
+          const closeRealEstate = await realEstateModel.findOneAndUpdate(
+            { _id: auction.realEstateID._id },
+            { status: "End" }
+          );
+        }
       }
 
       // Save updated auction
